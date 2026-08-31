@@ -1,0 +1,475 @@
+// 项目导读：数据库总账本：关系、索引和级联规则都写在这里；改表前先想三遍，MySQL 可不陪我们临场发挥。
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  VOLUNTEER
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  PENDING
+}
+
+enum VolunteerStatus {
+  ACTIVE
+  PAUSED
+  EXITED
+}
+
+enum Visibility {
+  ALL
+  ADMINS
+  VOLUNTEERS
+  PRIVATE
+}
+
+enum ResourceVisibility {
+  ALL
+  ADMINS
+  VOLUNTEERS
+}
+
+enum FilePreviewStatus {
+  NONE
+  PENDING
+  READY
+  FAILED
+}
+
+enum TutorialStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum NoticeType {
+  GENERAL
+  ACTIVITY
+  TASK
+  URGENT
+  SYSTEM
+}
+
+enum TaskStatus {
+  DRAFT
+  PUBLISHED
+  FULL
+  IN_PROGRESS
+  ENDED
+  ARCHIVED
+}
+
+enum TaskSignupStatus {
+  SIGNED_UP
+  CANCEL_REQUESTED
+  CANCELLED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VolunteerHourStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BillStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+}
+
+enum MessageCategory {
+  APPLICATION
+  REPLY
+  SYSTEM
+}
+
+model User {
+  id                      String             @id @default(cuid())
+  username                String             @unique
+  passwordHash            String
+  mustChangePassword      Boolean            @default(true)
+  role                    Role               @default(VOLUNTEER)
+  name                    String
+  studentId               String?            @unique
+  phone                   String?
+  qq                      String?
+  wechat                  String?
+  grade                   String?
+  major                   String?
+  className               String?
+  status                  UserStatus         @default(PENDING)
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
+  lastLoginAt             DateTime?
+  deletedAt               DateTime?
+  volunteerProfile        VolunteerProfile?
+  volunteerSchedule       VolunteerSchedule?
+  notices                 Notice[]           @relation("NoticeCreator")
+  noticeReads             NoticeRead[]
+  tasks                   Task[]             @relation("TaskCreator")
+  signups                 TaskSignup[]
+  reviewedCancelRequests  TaskSignup[]       @relation("TaskSignupCancelReviewer")
+  taskSubmissions         TaskSubmission[]   @relation("TaskSubmissionUser")
+  reviewedTaskSubmissions TaskSubmission[]   @relation("TaskSubmissionReviewer")
+  files                   FileResource[]     @relation("FileUploader")
+  resourceFolders         ResourceFolder[]   @relation("ResourceFolderCreator")
+  resourceProjects        ResourceProject[]  @relation("ResourceProjectCreator")
+  handledBills            Bill[]             @relation("BillHandler")
+  volunteerHours          VolunteerHour[]    @relation("VolunteerHourUser")
+  reviewedHours           VolunteerHour[]    @relation("VolunteerHourReviewer")
+  taskTypes               TaskType[]         @relation("TaskTypeCreator")
+  tutorials               Tutorial[]         @relation("TutorialAuthor")
+  operationLogs           OperationLog[]
+  receivedMessages        Message[]          @relation("MessageReceiver")
+  sentMessages            Message[]          @relation("MessageSender")
+
+  @@index([deletedAt, role])
+}
+
+model VolunteerProfile {
+  id        String          @id @default(cuid())
+  userId    String          @unique
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skills    String?         @db.Text
+  joinDate  DateTime?
+  groupName String?
+  tags      String?         @db.Text
+  notes     String?         @db.Text
+  status    VolunteerStatus @default(ACTIVE)
+}
+
+model VolunteerSchedule {
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  academicTerm   String
+  className      String?
+  major          String?
+  department     String?
+  sourceFileName String
+  fileSize       Int
+  courses        ScheduleCourse[]
+  uploadedAt     DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model ScheduleCourse {
+  id           String            @id @default(cuid())
+  scheduleId   String
+  schedule     VolunteerSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  dayOfWeek    Int
+  startTime    String            @db.VarChar(5)
+  endTime      String            @db.VarChar(5)
+  courseName   String
+  details      String            @db.Text
+  weeks        String            @db.Text
+  originalText String            @db.Text
+
+  @@index([dayOfWeek, startTime, endTime])
+}
+
+model Notice {
+  id          String       @id @default(cuid())
+  title       String
+  content     String       @db.Text
+  type        NoticeType   @default(GENERAL)
+  visibility  Visibility   @default(ALL)
+  isPinned    Boolean      @default(false)
+  needConfirm Boolean      @default(false)
+  createdById String
+  createdBy   User         @relation("NoticeCreator", fields: [createdById], references: [id])
+  reads       NoticeRead[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model NoticeRead {
+  id       String   @id @default(cuid())
+  noticeId String
+  notice   Notice   @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt   DateTime @default(now())
+
+  @@unique([noticeId, userId])
+}
+
+model TaskType {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  description     String?  @db.Text
+  defaultTemplate String?  @db.Text
+  defaultHours    Float?
+  isActive        Boolean  @default(true)
+  createdById     String
+  createdBy       User     @relation("TaskTypeCreator", fields: [createdById], references: [id])
+  tasks           Task[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Task {
+  id                String           @id @default(cuid())
+  title             String
+  description       String           @db.Text
+  typeId            String
+  taskType          TaskType         @relation(fields: [typeId], references: [id])
+  deadline          DateTime?
+  startTime         DateTime?
+  endTime           DateTime?
+  startClockTime    String?          @db.VarChar(5)
+  endClockTime      String?          @db.VarChar(5)
+  maxMembers        Int?
+  status            TaskStatus       @default(DRAFT)
+  visibility        Visibility       @default(VOLUNTEERS)
+  needFeedback      Boolean          @default(true)
+  needProof         Boolean          @default(true)
+  allowCancel       Boolean          @default(true)
+  cancelNeedsReview Boolean          @default(true)
+  countHours        Boolean          @default(true)
+  estimatedHours    Float?
+  createdById       String
+  createdBy         User             @relation("TaskCreator", fields: [createdById], references: [id])
+  signups           TaskSignup[]
+  submissions       TaskSubmission[]
+  volunteerHours    VolunteerHour[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model TaskSignup {
+  id                 String           @id @default(cuid())
+  taskId             String
+  task               Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  signupAt           DateTime         @default(now())
+  cancelReason       String?          @db.Text
+  cancelRequestedAt  DateTime?
+  cancelReviewedAt   DateTime?
+  cancelReviewedById String?
+  cancelReviewedBy   User?            @relation("TaskSignupCancelReviewer", fields: [cancelReviewedById], references: [id])
+  status             TaskSignupStatus @default(SIGNED_UP)
+  submissions        TaskSubmission[]
+
+  @@unique([taskId, userId])
+}
+
+model TaskSubmission {
+  id            String           @id @default(cuid())
+  taskId        String
+  task          Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  signupId      String
+  signup        TaskSignup       @relation(fields: [signupId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User             @relation("TaskSubmissionUser", fields: [userId], references: [id], onDelete: Cascade)
+  actualHours   Float
+  description   String           @db.Text
+  proofFileUrl  String?
+  proofFileName String?
+  proofFileType String?
+  proofFileSize Int?
+  status        SubmissionStatus @default(PENDING)
+  reviewedById  String?
+  reviewedBy    User?            @relation("TaskSubmissionReviewer", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  rejectReason  String?          @db.Text
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model FileResource {
+  id            String            @id @default(cuid())
+  title         String
+  category      String
+  fileUrl       String?
+  fileName      String?
+  fileType      String?
+  fileSize      Int?
+  folderId      String?
+  folder        ResourceFolder?   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       ResourceProject?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  storageKey    String?           @unique
+  previewKey    String?
+  posterKey     String?
+  previewStatus FilePreviewStatus @default(NONE)
+  description   String?           @db.Text
+  uploadedById  String
+  uploadedBy    User              @relation("FileUploader", fields: [uploadedById], references: [id])
+  visibility    Visibility        @default(ALL)
+  tags          String?           @db.Text
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([projectId, folderId, title])
+}
+
+model ResourceFolder {
+  id          String             @id @default(cuid())
+  name        String
+  parentId    String?
+  parent      ResourceFolder?    @relation("ResourceFolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children    ResourceFolder[]   @relation("ResourceFolderTree")
+  visibility  ResourceVisibility @default(ALL)
+  createdById String
+  createdBy   User               @relation("ResourceFolderCreator", fields: [createdById], references: [id])
+  files       FileResource[]
+  projectId   String?
+  project     ResourceProject?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@index([projectId, parentId, name])
+}
+
+model ResourceProject {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?          @db.Text
+  createdById String
+  createdBy   User             @relation("ResourceProjectCreator", fields: [createdById], references: [id])
+  folders     ResourceFolder[]
+  files       FileResource[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Bill {
+  id            String     @id @default(cuid())
+  title         String
+  amount        Decimal    @db.Decimal(10, 2)
+  billType      String
+  billDate      DateTime
+  handlerId     String?
+  handler       User?      @relation("BillHandler", fields: [handlerId], references: [id])
+  attachmentUrl String?
+  description   String?    @db.Text
+  status        BillStatus @default(DRAFT)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model VolunteerHour {
+  id                    String              @id @default(cuid())
+  userId                String
+  user                  User                @relation("VolunteerHourUser", fields: [userId], references: [id], onDelete: Cascade)
+  taskId                String?
+  task                  Task?               @relation(fields: [taskId], references: [id])
+  activityName          String
+  workContent           String?             @db.Text
+  serviceStartAt        DateTime?
+  serviceEndAt          DateTime?
+  serviceStartClockTime String?             @db.VarChar(5)
+  serviceEndClockTime   String?             @db.VarChar(5)
+  hours                 Float
+  status                VolunteerHourStatus @default(PENDING)
+  reviewedById          String?
+  reviewedBy            User?               @relation("VolunteerHourReviewer", fields: [reviewedById], references: [id])
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  proofFileUrl          String?
+  proofFileName         String?
+  proofFileType         String?
+  proofFileSize         Int?
+  rejectReason          String?             @db.Text
+  notes                 String?             @db.Text
+
+  @@unique([userId, taskId])
+}
+
+model Tutorial {
+  id                   String         @id @default(cuid())
+  title                String
+  content              String         @db.Text
+  contentFormat        String         @default("PLAIN") @db.VarChar(20)
+  category             String
+  authorId             String
+  author               User           @relation("TutorialAuthor", fields: [authorId], references: [id])
+  visibility           Visibility     @default(ALL)
+  status               TutorialStatus @default(DRAFT)
+  publishedAt          DateTime?
+  tags                 String?        @db.Text
+  isPinned             Boolean        @default(false)
+  attachmentStorageKey String?        @db.VarChar(500)
+  attachmentFileName   String?
+  attachmentFileType   String?
+  attachmentFileSize   Int?
+  inlineImages         TutorialInlineImage[]
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+}
+
+model TutorialInlineImage {
+  id           String    @id
+  tutorialId   String?
+  tutorial     Tutorial? @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  storageKey   String    @unique @db.VarChar(500)
+  uploadedById String
+  fileName     String
+  fileSize     Int
+  createdAt    DateTime  @default(now())
+
+  @@index([tutorialId])
+  @@index([uploadedById, createdAt])
+}
+
+model Message {
+  id         String          @id @default(cuid())
+  receiverId String
+  receiver   User            @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  senderId   String?
+  sender     User?           @relation("MessageSender", fields: [senderId], references: [id])
+  title      String
+  content    String          @db.Text
+  category   MessageCategory @default(REPLY)
+  status     MessageStatus   @default(UNREAD)
+  relatedUrl String?
+  createdAt  DateTime        @default(now())
+  readAt     DateTime?
+}
+
+model OperationLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  targetType String
+  targetId   String?
+  detail     String?  @db.Text
+  createdAt  DateTime @default(now())
+}
+
+model FloatingAnnouncement {
+  id            Int      @id @default(1)
+  content       String   @db.Text
+  isEnabled     Boolean  @default(false)
+  updatedById   String?
+  updatedByName String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

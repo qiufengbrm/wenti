@@ -1,0 +1,362 @@
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -446,4 +446,14 @@
+   targetId   String?
+   detail     String?  @db.Text
+   createdAt  DateTime @default(now())
++}
++
++model FloatingAnnouncement {
++  id            Int      @id @default(1)
++  content       String   @db.Text
++  isEnabled     Boolean  @default(false)
++  updatedById   String?
++  updatedByName String?
++  createdAt     DateTime @default(now())
++  updatedAt     DateTime @updatedAt
+ }
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -1,6 +1,7 @@
+ /** 项目导读：页面布局：统一导航、主题和内容骨架；架子搭稳了，里面的页面才不会各走各的。 */
+ import type { Metadata } from "next";
+ import { SessionGuard } from "@/components/auth/SessionGuard";
++import { FloatingAnnouncement } from "@/components/layout/FloatingAnnouncement";
+ import "./globals.css";
+ 
+ export const metadata: Metadata = {
+@@ -20,6 +21,7 @@
+       <head><script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} /></head>
+       <body>
+         <SessionGuard />
++        <FloatingAnnouncement />
+         {children}
+       </body>
+     </html>
+--- a/src/app/admin/settings/page.tsx
++++ b/src/app/admin/settings/page.tsx
+@@ -1,19 +1,17 @@
+-/** 项目导读：页面入口 admin → settings：负责取数和组装界面，重活尽量交给组件，别让页面一人包办全村席面。 */
+-import { Card } from "@/components/ui/Card";
++/** 项目导读：页面入口 admin → settings：超级管理员在这里掌总开关，维护前先敲锣，大家收工才不慌。 */
++import { SiteAnnouncementSettings } from "@/components/settings/SiteAnnouncementSettings";
+ import { PageHeader } from "@/components/ui/PageHeader";
++import { getFloatingAnnouncement } from "@/lib/floating-announcement";
++import { requireSuperAdmin } from "@/lib/auth";
+ 
+-export default function AdminSettingsPage() {
++export default async function AdminSettingsPage() {
++  await requireSuperAdmin();
++  const announcement = await getFloatingAnnouncement();
++
+   return (
+     <>
+-      <PageHeader description="仅超级管理员可见，后续用于维护系统基础配置。" title="系统设置" />
+-      <div className="grid gap-4 lg:grid-cols-2">
+-        {["中心名称", "默认通知可见范围", "志愿时长审核策略", "文件上传限制"].map((item) => (
+-          <Card key={item}>
+-            <h2 className="text-base font-semibold text-slate-950">{item}</h2>
+-            <p className="mt-2 text-sm text-slate-500">配置项占位，后续接入真实设置表和保存接口。</p>
+-          </Card>
+-        ))}
+-      </div>
++      <PageHeader description="仅超级管理员可见。维护前可在这里向全站悬浮发布临时公告。" title="系统设置" />
++      <SiteAnnouncementSettings initialAnnouncement={announcement} />
+     </>
+   );
+ }
+--- a/prisma/migrations/20260831150000_floating_announcement/migration.sql
++++ b/prisma/migrations/20260831150000_floating_announcement/migration.sql
+@@ -0,0 +1,14 @@
++CREATE TABLE `FloatingAnnouncement` (
++  `id` INTEGER NOT NULL DEFAULT 1,
++  `content` TEXT NOT NULL,
++  `isEnabled` BOOLEAN NOT NULL DEFAULT false,
++  `updatedById` VARCHAR(191) NULL,
++  `updatedByName` VARCHAR(191) NULL,
++  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
++  `updatedAt` DATETIME(3) NOT NULL,
++
++  PRIMARY KEY (`id`)
++) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
++
++INSERT INTO `FloatingAnnouncement` (`id`, `content`, `isEnabled`, `updatedAt`)
++VALUES (1, '网站即将进行短暂维护，请及时保存正在填写的内容。', false, CURRENT_TIMESTAMP(3));
+--- a/src/lib/floating-announcement.ts
++++ b/src/lib/floating-announcement.ts
+@@ -0,0 +1,28 @@
++/** 项目导读：全站悬浮公告总闸门：只认一条当前公告，避免维护通知在数据库里开成早市。 */
++import { prisma } from "@/lib/db";
++
++export type FloatingAnnouncementData = {
++  content: string;
++  enabled: boolean;
++  updatedAt: string | null;
++  updatedByName: string | null;
++};
++
++const defaultAnnouncement: FloatingAnnouncementData = {
++  content: "网站即将进行短暂维护，请及时保存正在填写的内容。",
++  enabled: false,
++  updatedAt: null,
++  updatedByName: null
++};
++
++export async function getFloatingAnnouncement(): Promise<FloatingAnnouncementData> {
++  const announcement = await prisma.floatingAnnouncement.findUnique({ where: { id: 1 } });
++  if (!announcement) return defaultAnnouncement;
++
++  return {
++    content: announcement.content,
++    enabled: announcement.isEnabled,
++    updatedAt: announcement.updatedAt.toISOString(),
++    updatedByName: announcement.updatedByName
++  };
++}
+--- a/src/app/api/site-announcement/route.ts
++++ b/src/app/api/site-announcement/route.ts
+@@ -0,0 +1,72 @@
++/** 项目导读：全站公告接口：所有页面可以读，只有超级管理员能碰总开关；喇叭公用，话筒不能乱抢。 */
++import { NextResponse, type NextRequest } from "next/server";
++import { z } from "zod";
++import { requireApiUser } from "@/app/api/_utils";
++import { prisma } from "@/lib/db";
++import { getFloatingAnnouncement } from "@/lib/floating-announcement";
++import { isSuperAdmin } from "@/lib/permissions";
++
++export const dynamic = "force-dynamic";
++
++const updateSchema = z.object({
++  content: z.string().trim().max(500, "公告内容不能超过 500 个字符"),
++  enabled: z.boolean()
++}).refine((value) => !value.enabled || value.content.length > 0, {
++  message: "开启公告前请先填写内容",
++  path: ["content"]
++});
++
++export async function GET() {
++  const data = await getFloatingAnnouncement();
++  return NextResponse.json({ data }, { headers: { "Cache-Control": "no-store" } });
++}
++
++export async function PATCH(request: NextRequest) {
++  const auth = await requireApiUser();
++  if (auth.response || !auth.user) return auth.response;
++  if (!isSuperAdmin(auth.user.role)) return NextResponse.json({ message: "仅超级管理员可以设置全站公告" }, { status: 403 });
++
++  const payload = await request.json().catch(() => null);
++  const parsed = updateSchema.safeParse(payload);
++  if (!parsed.success) return NextResponse.json({ message: parsed.error.issues[0]?.message ?? "公告设置无效" }, { status: 400 });
++
++  const announcement = await prisma.$transaction(async (tx) => {
++    const saved = await tx.floatingAnnouncement.upsert({
++      where: { id: 1 },
++      create: {
++        id: 1,
++        content: parsed.data.content,
++        isEnabled: parsed.data.enabled,
++        updatedById: auth.user!.id,
++        updatedByName: auth.user!.name
++      },
++      update: {
++        content: parsed.data.content,
++        isEnabled: parsed.data.enabled,
++        updatedById: auth.user!.id,
++        updatedByName: auth.user!.name
++      }
++    });
++
++    await tx.operationLog.create({
++      data: {
++        userId: auth.user!.id,
++        action: parsed.data.enabled ? "开启全站悬浮公告" : "关闭全站悬浮公告",
++        targetType: "FloatingAnnouncement",
++        targetId: String(saved.id),
++        detail: parsed.data.enabled ? `公告内容：${parsed.data.content}` : "关闭全站悬浮公告"
++      }
++    });
++    return saved;
++  });
++
++  return NextResponse.json({
++    data: {
++      content: announcement.content,
++      enabled: announcement.isEnabled,
++      updatedAt: announcement.updatedAt.toISOString(),
++      updatedByName: announcement.updatedByName
++    },
++    message: announcement.isEnabled ? "全站悬浮公告已开启" : "全站悬浮公告已关闭"
++  });
++}
+--- a/src/components/layout/FloatingAnnouncement.tsx
++++ b/src/components/layout/FloatingAnnouncement.tsx
+@@ -0,0 +1,67 @@
++/** 项目导读：全站悬浮公告：每次打开页面都重新露脸，用户关掉后本页安静，管理员换内容时再来敲门。 */
++"use client";
++
++import { TriangleAlert, X } from "lucide-react";
++import { useCallback, useEffect, useState } from "react";
++import type { FloatingAnnouncementData } from "@/lib/floating-announcement";
++
++const refreshInterval = 30_000;
++const announcementUpdateEvent = "wenti:floating-announcement";
++
++export function FloatingAnnouncement() {
++  const [announcement, setAnnouncement] = useState<FloatingAnnouncementData | null>(null);
++  const [dismissedVersion, setDismissedVersion] = useState<string | null>(null);
++
++  const refresh = useCallback(async () => {
++    try {
++      const response = await fetch("/api/site-announcement", { cache: "no-store" });
++      if (!response.ok) return;
++      const result = (await response.json()) as { data?: FloatingAnnouncementData };
++      setAnnouncement(result.data?.enabled && result.data.content ? result.data : null);
++    } catch {
++      // 公告接口暂时够不着就别挡页面，维护提醒不能自己先把网站吓坏。
++    }
++  }, []);
++
++  useEffect(() => {
++    void refresh();
++    const timer = window.setInterval(() => void refresh(), refreshInterval);
++    function receiveUpdate(event: Event) {
++      const data = (event as CustomEvent<FloatingAnnouncementData>).detail;
++      setAnnouncement(data?.enabled && data.content ? data : null);
++    }
++    window.addEventListener(announcementUpdateEvent, receiveUpdate);
++    return () => {
++      window.clearInterval(timer);
++      window.removeEventListener(announcementUpdateEvent, receiveUpdate);
++    };
++  }, [refresh]);
++
++  const version = announcement?.updatedAt ?? announcement?.content ?? null;
++  if (!announcement || (version && dismissedVersion === version)) return null;
++
++  return (
++    <aside
++      aria-label="全站临时公告"
++      aria-live="assertive"
++      className="fixed inset-x-3 top-[calc(env(safe-area-inset-top)+0.75rem)] z-[100] mx-auto flex max-h-[40vh] max-w-3xl items-start gap-3 overflow-auto rounded-[16px] border border-amber-500/25 bg-[rgba(255,249,235,.96)] px-3 py-3 text-amber-950 shadow-floating backdrop-blur-xl sm:inset-x-6 sm:px-4 dark:border-amber-300/20 dark:bg-[rgba(43,35,19,.96)] dark:text-amber-50"
++      role="alert"
++    >
++      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-700 dark:bg-amber-300/15 dark:text-amber-200">
++        <TriangleAlert aria-hidden="true" size={18} />
++      </span>
++      <div className="min-w-0 flex-1">
++        <p className="text-[12px] font-semibold tracking-[0.02em] text-amber-700 dark:text-amber-200">临时公告</p>
++        <p className="mt-0.5 whitespace-pre-wrap break-words text-[14px] font-medium leading-6 tracking-[-0.005em]">{announcement.content}</p>
++      </div>
++      <button
++        aria-label="关闭临时公告"
++        className="-mr-1 -mt-1 flex size-11 shrink-0 items-center justify-center rounded-full text-amber-800 transition-[background-color,transform] duration-150 hover:bg-amber-500/12 active:scale-[0.92] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/20 dark:text-amber-100 dark:hover:bg-amber-200/10"
++        onClick={() => version && setDismissedVersion(version)}
++        type="button"
++      >
++        <X size={19} />
++      </button>
++    </aside>
++  );
++}
+--- a/src/components/settings/SiteAnnouncementSettings.tsx
++++ b/src/components/settings/SiteAnnouncementSettings.tsx
+@@ -0,0 +1,98 @@
++/** 项目导读：公告控制台：内容、总开关和预览摆在一起，维护前敲一下锣，维护后记得收摊。 */
++"use client";
++
++import { Check, LoaderCircle, Megaphone, TriangleAlert } from "lucide-react";
++import { useState } from "react";
++import { Button } from "@/components/ui/Button";
++import { Card } from "@/components/ui/Card";
++import type { FloatingAnnouncementData } from "@/lib/floating-announcement";
++
++export function SiteAnnouncementSettings({ initialAnnouncement }: { initialAnnouncement: FloatingAnnouncementData }) {
++  const [content, setContent] = useState(initialAnnouncement.content);
++  const [enabled, setEnabled] = useState(initialAnnouncement.enabled);
++  const [saving, setSaving] = useState(false);
++  const [feedback, setFeedback] = useState<{ kind: "error" | "success"; message: string } | null>(null);
++  const [updatedAt, setUpdatedAt] = useState(initialAnnouncement.updatedAt);
++
++  async function save() {
++    setSaving(true);
++    setFeedback(null);
++    try {
++      const response = await fetch("/api/site-announcement", {
++        method: "PATCH",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ content, enabled })
++      });
++      const result = (await response.json()) as { data?: FloatingAnnouncementData; message?: string };
++      if (!response.ok) {
++        setFeedback({ kind: "error", message: result.message ?? "保存公告失败" });
++        return;
++      }
++      if (result.data) {
++        setContent(result.data.content);
++        setEnabled(result.data.enabled);
++        setUpdatedAt(result.data.updatedAt);
++        window.dispatchEvent(new CustomEvent("wenti:floating-announcement", { detail: result.data }));
++      }
++      setFeedback({ kind: "success", message: result.message ?? "公告设置已保存" });
++    } catch {
++      setFeedback({ kind: "error", message: "网络开小差了，公告没有保存，请重试" });
++    } finally {
++      setSaving(false);
++    }
++  }
++
++  return (
++    <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(20rem,.8fr)]">
++      <Card className="p-5 sm:p-6">
++        <div className="flex items-start justify-between gap-4">
++          <div className="flex min-w-0 items-start gap-3">
++            <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[#0071e3]/10 text-[#0066cc]"><Megaphone size={20} /></span>
++            <div><h2 className="font-semibold text-[#1d1d1f]">全站悬浮公告</h2><p className="mt-1 text-[13px] leading-5 text-[#6e6e73]">开启后会显示在管理员端、志愿者端和登录页顶部。</p></div>
++          </div>
++          <button
++            aria-checked={enabled}
++            aria-label={enabled ? "关闭全站悬浮公告" : "开启全站悬浮公告"}
++            className={`relative h-8 w-[52px] shrink-0 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0071e3]/20 ${enabled ? "bg-[#34c759]" : "bg-black/20 dark:bg-white/25"}`}
++            onClick={() => setEnabled((current) => !current)}
++            role="switch"
++            type="button"
++          >
++            <span className={`absolute top-1 size-6 rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,.22)] transition-transform duration-200 ease-apple-out ${enabled ? "translate-x-6" : "translate-x-1"}`} />
++          </button>
++        </div>
++
++        <label className="mt-6 grid gap-2 text-[13px] font-semibold text-[#3a3a3c]">
++          公告内容
++          <textarea
++            className="min-h-36 resize-y rounded-[12px] border border-black/[0.12] bg-white px-3.5 py-3 text-[15px] font-normal leading-6 text-[#1d1d1f] outline-none transition focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10"
++            maxLength={500}
++            onChange={(event) => setContent(event.target.value)}
++            placeholder="例如：网站将在今晚 22:00 进行维护，请提前保存正在填写的内容。"
++            value={content}
++          />
++        </label>
++        <div className="mt-2 flex items-start justify-between gap-3 text-[12px] leading-5 text-[#86868b]"><p>用户可关闭本次提示；刷新或重新打开网页后，只要总开关仍开启，公告会再次出现。</p><span className="shrink-0 tabular-nums">{content.length}/500</span></div>
++
++        {feedback ? <p className={`mt-4 flex items-center gap-2 rounded-[10px] px-3 py-2.5 text-[13px] ${feedback.kind === "success" ? "bg-[#34c759]/10 text-[#197a31] dark:bg-[#30d158]/15 dark:text-[#7ee787]" : "bg-[#ff3b30]/10 text-[#c7231a] dark:bg-[#ff453a]/15 dark:text-[#ff8a84]"}`} role="status">{feedback.kind === "success" ? <Check size={16} /> : <TriangleAlert size={16} />}{feedback.message}</p> : null}
++
++        <div className="mt-5 flex flex-col-reverse items-stretch justify-between gap-3 border-t border-black/[0.07] pt-5 sm:flex-row sm:items-center">
++          <p className="text-[12px] text-[#86868b]">{updatedAt ? `最近保存：${formatTime(updatedAt)}` : "尚未保存过公告设置"}</p>
++          <Button className="w-full sm:w-auto" disabled={saving} onClick={save}>{saving ? <><LoaderCircle className="mr-2 animate-spin" size={16} />保存中...</> : "保存公告设置"}</Button>
++        </div>
++      </Card>
++
++      <Card className="p-5 sm:p-6">
++        <div className="flex items-center justify-between gap-3"><h2 className="font-semibold text-[#1d1d1f]">显示预览</h2><span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${enabled ? "bg-[#34c759]/10 text-[#197a31]" : "bg-black/[0.05] text-[#6e6e73]"}`}>{enabled ? "保存后开启" : "保存后关闭"}</span></div>
++        <div className="mt-4 rounded-[16px] border border-amber-500/25 bg-[#fff9eb] p-3.5 text-amber-950 dark:border-amber-300/20 dark:bg-[#2b2313] dark:text-amber-50">
++          <div className="flex items-start gap-3"><span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-amber-700"><TriangleAlert size={18} /></span><div className="min-w-0"><p className="text-[12px] font-semibold tracking-[0.02em] text-amber-700">临时公告</p><p className="mt-0.5 whitespace-pre-wrap break-words text-[14px] font-medium leading-6">{content.trim() || "公告内容会显示在这里。"}</p></div></div>
++        </div>
++        <div className="mt-5 rounded-[12px] bg-black/[0.025] p-4 text-[13px] leading-6 text-[#6e6e73]"><p className="font-semibold text-[#3a3a3c]">使用建议</p><p className="mt-1">写清维护开始时间、预计恢复时间，以及需要用户提前保存什么。公告是敲锣，不是写年终总结，短一点更容易看见。</p></div>
++      </Card>
++    </div>
++  );
++}
++
++function formatTime(value: string) {
++  return new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
++}
+

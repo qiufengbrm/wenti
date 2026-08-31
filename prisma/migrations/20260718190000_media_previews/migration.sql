@@ -1,0 +1,1 @@
+ALTER TABLE `FileResource` ADD COLUMN `posterKey` VARCHAR(191) NULL;

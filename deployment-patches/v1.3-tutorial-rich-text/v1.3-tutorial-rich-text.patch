@@ -1,0 +1,1412 @@
+--- a/package.json
++++ b/package.json
+@@ -26,6 +26,7 @@
+     "next": "^15.1.11",
+     "react": "^19.0.1",
+     "react-dom": "^19.0.1",
++    "sanitize-html": "^2.17.7",
+     "tailwind-merge": "^2.6.0",
+     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+     "zod": "3.24.1"
+@@ -35,6 +36,7 @@
+     "@types/node": "^22.10.2",
+     "@types/react": "^19.0.2",
+     "@types/react-dom": "^19.0.2",
++    "@types/sanitize-html": "^2.16.1",
+     "autoprefixer": "^10.4.20",
+     "eslint": "^9.17.0",
+     "eslint-config-next": "15.1.7",
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -15,6 +15,7 @@
+         "next": "^15.1.11",
+         "react": "^19.0.1",
+         "react-dom": "^19.0.1",
++        "sanitize-html": "^2.17.7",
+         "tailwind-merge": "^2.6.0",
+         "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+         "zod": "3.24.1"
+@@ -24,6 +25,7 @@
+         "@types/node": "^22.10.2",
+         "@types/react": "^19.0.2",
+         "@types/react-dom": "^19.0.2",
++        "@types/sanitize-html": "^2.16.1",
+         "autoprefixer": "^10.4.20",
+         "eslint": "^9.17.0",
+         "eslint-config-next": "15.1.7",
+@@ -1104,6 +1106,121 @@
+       "license": "MIT",
+       "dependencies": {
+         "@types/node": "*"
++      }
++    },
++    "node_modules/@types/sanitize-html": {
++      "version": "2.16.1",
++      "resolved": "https://registry.npmjs.org/@types/sanitize-html/-/sanitize-html-2.16.1.tgz",
++      "integrity": "sha512-n9wjs8bCOTyN/ynwD8s/nTcTreIHB1vf31vhLMGqUPNHaweKC4/fAl4Dj+hUlCTKYgm4P3k83fmiFfzkZ6sgMA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "htmlparser2": "^10.1"
++      }
++    },
++    "node_modules/@types/sanitize-html/node_modules/dom-serializer": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/dom-serializer/-/dom-serializer-2.0.0.tgz",
++      "integrity": "sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "domelementtype": "^2.3.0",
++        "domhandler": "^5.0.2",
++        "entities": "^4.2.0"
++      },
++      "funding": {
++        "url": "https://github.com/cheeriojs/dom-serializer?sponsor=1"
++      }
++    },
++    "node_modules/@types/sanitize-html/node_modules/dom-serializer/node_modules/entities": {
++      "version": "4.5.0",
++      "resolved": "https://registry.npmjs.org/entities/-/entities-4.5.0.tgz",
++      "integrity": "sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==",
++      "dev": true,
++      "license": "BSD-2-Clause",
++      "engines": {
++        "node": ">=0.12"
++      },
++      "funding": {
++        "url": "https://github.com/fb55/entities?sponsor=1"
++      }
++    },
++    "node_modules/@types/sanitize-html/node_modules/domelementtype": {
++      "version": "2.3.0",
++      "resolved": "https://registry.npmjs.org/domelementtype/-/domelementtype-2.3.0.tgz",
++      "integrity": "sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==",
++      "dev": true,
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/fb55"
++        }
++      ],
++      "license": "BSD-2-Clause"
++    },
++    "node_modules/@types/sanitize-html/node_modules/domhandler": {
++      "version": "5.0.3",
++      "resolved": "https://registry.npmjs.org/domhandler/-/domhandler-5.0.3.tgz",
++      "integrity": "sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==",
++      "dev": true,
++      "license": "BSD-2-Clause",
++      "dependencies": {
++        "domelementtype": "^2.3.0"
++      },
++      "engines": {
++        "node": ">= 4"
++      },
++      "funding": {
++        "url": "https://github.com/fb55/domhandler?sponsor=1"
++      }
++    },
++    "node_modules/@types/sanitize-html/node_modules/domutils": {
++      "version": "3.2.2",
++      "resolved": "https://registry.npmjs.org/domutils/-/domutils-3.2.2.tgz",
++      "integrity": "sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==",
++      "dev": true,
++      "license": "BSD-2-Clause",
++      "dependencies": {
++        "dom-serializer": "^2.0.0",
++        "domelementtype": "^2.3.0",
++        "domhandler": "^5.0.3"
++      },
++      "funding": {
++        "url": "https://github.com/fb55/domutils?sponsor=1"
++      }
++    },
++    "node_modules/@types/sanitize-html/node_modules/entities": {
++      "version": "7.0.1",
++      "resolved": "https://registry.npmjs.org/entities/-/entities-7.0.1.tgz",
++      "integrity": "sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==",
++      "dev": true,
++      "license": "BSD-2-Clause",
++      "engines": {
++        "node": ">=0.12"
++      },
++      "funding": {
++        "url": "https://github.com/fb55/entities?sponsor=1"
++      }
++    },
++    "node_modules/@types/sanitize-html/node_modules/htmlparser2": {
++      "version": "10.1.0",
++      "resolved": "https://registry.npmjs.org/htmlparser2/-/htmlparser2-10.1.0.tgz",
++      "integrity": "sha512-VTZkM9GWRAtEpveh7MSF6SjjrpNVNNVJfFup7xTY3UpFtm67foy9HDVXneLtFVt4pMz5kZtgNcvCniNFb1hlEQ==",
++      "dev": true,
++      "funding": [
++        "https://github.com/fb55/htmlparser2?sponsor=1",
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/fb55"
++        }
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "domelementtype": "^2.3.0",
++        "domhandler": "^5.0.3",
++        "domutils": "^3.2.2",
++        "entities": "^7.0.1"
+       }
+     },
+     "node_modules/@typescript-eslint/eslint-plugin": {
+@@ -2738,6 +2855,12 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/dayjs": {
++      "version": "1.11.23",
++      "resolved": "https://registry.npmjs.org/dayjs/-/dayjs-1.11.23.tgz",
++      "integrity": "sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==",
++      "license": "MIT"
++    },
+     "node_modules/debug": {
+       "version": "4.4.3",
+       "resolved": "https://registry.npmjs.org/debug/-/debug-4.4.3.tgz",
+@@ -2763,6 +2886,15 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/deepmerge": {
++      "version": "4.3.1",
++      "resolved": "https://registry.npmjs.org/deepmerge/-/deepmerge-4.3.1.tgz",
++      "integrity": "sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=0.10.0"
++      }
++    },
+     "node_modules/define-data-property": {
+       "version": "1.1.4",
+       "resolved": "https://registry.npmjs.org/define-data-property/-/define-data-property-1.1.4.tgz",
+@@ -2836,6 +2968,73 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/dom-serializer": {
++      "version": "3.1.1",
++      "resolved": "https://registry.npmjs.org/dom-serializer/-/dom-serializer-3.1.1.tgz",
++      "integrity": "sha512-4MEa38/QexBob6gFNwu+EGdWvhJ1OKuNwdYY3Y3NyeWDQfnGeDYQUDfIRzWu5B5gsv03so2Uxd28YC6zrsx3Lw==",
++      "license": "MIT",
++      "dependencies": {
++        "domelementtype": "^3.0.0",
++        "domhandler": "^6.0.0",
++        "entities": "^8.0.0"
++      },
++      "engines": {
++        "node": ">=20.19.0"
++      },
++      "funding": {
++        "type": "github",
++        "url": "https://github.com/cheeriojs/dom-serializer?sponsor=1"
++      }
++    },
++    "node_modules/domelementtype": {
++      "version": "3.0.0",
++      "resolved": "https://registry.npmjs.org/domelementtype/-/domelementtype-3.0.0.tgz",
++      "integrity": "sha512-umCQid3jKbDmVjx8jGaW7uUykm4DEUeyV21hPxNMo2nV955DhUThwqyOIDtreepP31hl84X7G5U9ZfsWvIB3Pg==",
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/fb55"
++        }
++      ],
++      "license": "BSD-2-Clause",
++      "engines": {
++        "node": ">=20.19.0"
++      }
++    },
++    "node_modules/domhandler": {
++      "version": "6.0.1",
++      "resolved": "https://registry.npmjs.org/domhandler/-/domhandler-6.0.1.tgz",
++      "integrity": "sha512-gYzvtM72ZtxQO0T048kd6HWSbbGCNOUwcnfQ01cqIJ4X2IYKFFHZ5mKvrQETcFXxsRObZulDaKmy//R7TPtsBg==",
++      "license": "BSD-2-Clause",
++      "dependencies": {
++        "domelementtype": "^3.0.0"
++      },
++      "engines": {
++        "node": ">=20.19.0"
++      },
++      "funding": {
++        "type": "github",
++        "url": "https://github.com/fb55/domhandler?sponsor=1"
++      }
++    },
++    "node_modules/domutils": {
++      "version": "4.0.2",
++      "resolved": "https://registry.npmjs.org/domutils/-/domutils-4.0.2.tgz",
++      "integrity": "sha512-qI4JLRKnSzqFqr7hAlS5xQDusBCjKSEG4t4+7aNrIQMHBcsC2TGEhuyABJdYkgSewL57PNLYEiibY2iPKhKpaA==",
++      "license": "BSD-2-Clause",
++      "dependencies": {
++        "dom-serializer": "^3.0.0",
++        "domelementtype": "^3.0.0",
++        "domhandler": "^6.0.0"
++      },
++      "engines": {
++        "node": ">=20.19.0"
++      },
++      "funding": {
++        "type": "github",
++        "url": "https://github.com/fb55/domutils?sponsor=1"
++      }
++    },
+     "node_modules/dunder-proto": {
+       "version": "1.0.1",
+       "resolved": "https://registry.npmjs.org/dunder-proto/-/dunder-proto-1.0.1.tgz",
+@@ -2869,6 +3068,18 @@
+       "resolved": "https://registry.npmjs.org/emoji-regex/-/emoji-regex-9.2.2.tgz",
+       "integrity": "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg==",
+       "license": "MIT"
++    },
++    "node_modules/entities": {
++      "version": "8.0.0",
++      "resolved": "https://registry.npmjs.org/entities/-/entities-8.0.0.tgz",
++      "integrity": "sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==",
++      "license": "BSD-2-Clause",
++      "engines": {
++        "node": ">=20.19.0"
++      },
++      "funding": {
++        "url": "https://github.com/fb55/entities?sponsor=1"
++      }
+     },
+     "node_modules/es-abstract": {
+       "version": "1.24.2",
+@@ -3083,7 +3294,6 @@
+       "version": "4.0.0",
+       "resolved": "https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz",
+       "integrity": "sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==",
+-      "dev": true,
+       "license": "MIT",
+       "engines": {
+         "node": ">=10"
+@@ -4040,6 +4250,28 @@
+       },
+       "engines": {
+         "node": ">= 0.4"
++      }
++    },
++    "node_modules/htmlparser2": {
++      "version": "12.0.0",
++      "resolved": "https://registry.npmjs.org/htmlparser2/-/htmlparser2-12.0.0.tgz",
++      "integrity": "sha512-Tz7u1i95/g2x2jz81+x0FBVhBhY5aRTvD3tXXdFaljuNdzDLJ8UGNRrTcj2cgQvAg3iW/h77Fz15nLW0L0CrZw==",
++      "funding": [
++        "https://github.com/fb55/htmlparser2?sponsor=1",
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/fb55"
++        }
++      ],
++      "license": "MIT",
++      "dependencies": {
++        "domelementtype": "^3.0.0",
++        "domhandler": "^6.0.0",
++        "domutils": "^4.0.2",
++        "entities": "^8.0.0"
++      },
++      "engines": {
++        "node": ">=20.19.0"
+       }
+     },
+     "node_modules/ieee754": {
+@@ -4420,6 +4652,15 @@
+       },
+       "funding": {
+         "url": "https://github.com/sponsors/ljharb"
++      }
++    },
++    "node_modules/is-plain-object": {
++      "version": "5.1.0",
++      "resolved": "https://registry.npmjs.org/is-plain-object/-/is-plain-object-5.1.0.tgz",
++      "integrity": "sha512-bUi/yjmtKYcRVUtWRGr0UA6xEFh2I6zWUwMrUXB3s7bmYCaZ8a+0ZsTRkrawh/mzlSD1Y0Ph8bp/U+TvBpWDNw==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=0.10.0"
+       }
+     },
+     "node_modules/is-regex": {
+@@ -4745,6 +4986,15 @@
+         "node": ">=0.10"
+       }
+     },
++    "node_modules/launder": {
++      "version": "1.7.1",
++      "resolved": "https://registry.npmjs.org/launder/-/launder-1.7.1.tgz",
++      "integrity": "sha512-mU6WRz5EusL9ZZuiZ5SO4Y6C0P9PAUR9iwdb6bzj4KDihm28DiHFw+/yk9DBH4f+Pv1wuzQ4e2jV3oQ7mkIqvw==",
++      "license": "MIT",
++      "dependencies": {
++        "dayjs": "^1.11.7"
++      }
++    },
+     "node_modules/lazystream": {
+       "version": "1.0.1",
+       "resolved": "https://registry.npmjs.org/lazystream/-/lazystream-1.0.1.tgz",
+@@ -5360,6 +5610,12 @@
+         "node": ">=6"
+       }
+     },
++    "node_modules/parse-srcset": {
++      "version": "1.0.2",
++      "resolved": "https://registry.npmjs.org/parse-srcset/-/parse-srcset-1.0.2.tgz",
++      "integrity": "sha512-/2qh0lav6CmI15FzA3i/2Bzk2zCgQhGMkvhOhKNcBVQ1ldgpbfiNTVslmooUmWJcADi1f1kIeynbDRVzNlfR6Q==",
++      "license": "MIT"
++    },
+     "node_modules/path-exists": {
+       "version": "4.0.0",
+       "resolved": "https://registry.npmjs.org/path-exists/-/path-exists-4.0.0.tgz",
+@@ -5455,7 +5711,6 @@
+       "version": "8.5.16",
+       "resolved": "https://registry.npmjs.org/postcss/-/postcss-8.5.16.tgz",
+       "integrity": "sha512-vuwillviilfKZsg0VGj5R/YwwcHx4SLsIOI/7K6mQkWx+l5cUHTjj5g0AasTBcyXsbfTgrwsUNmVUb5xVwyPwg==",
+-      "dev": true,
+       "funding": [
+         {
+           "type": "opencollective",
+@@ -6017,6 +6272,24 @@
+       },
+       "funding": {
+         "url": "https://github.com/sponsors/ljharb"
++      }
++    },
++    "node_modules/sanitize-html": {
++      "version": "2.17.7",
++      "resolved": "https://registry.npmjs.org/sanitize-html/-/sanitize-html-2.17.7.tgz",
++      "integrity": "sha512-PGtEkc9cbnedU3s9TmzDbpsZ8w086g/0Q8k8/oIO1NLNU3i5k9yn835CrjJSajp1KMmkisbO1qPXxNKO3welAg==",
++      "license": "MIT",
++      "dependencies": {
++        "deepmerge": "^4.2.2",
++        "escape-string-regexp": "^4.0.0",
++        "htmlparser2": "^12.0.0",
++        "is-plain-object": "^5.0.0",
++        "launder": "^1.7.1",
++        "parse-srcset": "^1.0.2",
++        "postcss": "^8.3.11"
++      },
++      "engines": {
++        "node": ">=22.12.0"
+       }
+     },
+     "node_modules/scheduler": {
+--- a/prisma/schema.prisma
++++ b/prisma/schema.prisma
+@@ -406,6 +406,7 @@
+   id                   String         @id @default(cuid())
+   title                String
+   content              String         @db.Text
++  contentFormat        String         @default("PLAIN") @db.VarChar(20)
+   category             String
+   authorId             String
+   author               User           @relation("TutorialAuthor", fields: [authorId], references: [id])
+@@ -418,8 +419,23 @@
+   attachmentFileName   String?
+   attachmentFileType   String?
+   attachmentFileSize   Int?
++  inlineImages         TutorialInlineImage[]
+   createdAt            DateTime       @default(now())
+   updatedAt            DateTime       @updatedAt
++}
++
++model TutorialInlineImage {
++  id           String    @id
++  tutorialId   String?
++  tutorial     Tutorial? @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
++  storageKey   String    @unique @db.VarChar(500)
++  uploadedById String
++  fileName     String
++  fileSize     Int
++  createdAt    DateTime  @default(now())
++
++  @@index([tutorialId])
++  @@index([uploadedById, createdAt])
+ }
+ 
+ model Message {
+--- a/prisma/migrations/20260831170000_tutorial_rich_text/migration.sql
++++ b/prisma/migrations/20260831170000_tutorial_rich_text/migration.sql
+@@ -0,0 +1,22 @@
++ALTER TABLE `Tutorial`
++  ADD COLUMN `contentFormat` VARCHAR(20) NOT NULL DEFAULT 'PLAIN';
++
++CREATE TABLE `TutorialInlineImage` (
++  `id` VARCHAR(191) NOT NULL,
++  `tutorialId` VARCHAR(191) NULL,
++  `storageKey` VARCHAR(500) NOT NULL,
++  `uploadedById` VARCHAR(191) NOT NULL,
++  `fileName` VARCHAR(191) NOT NULL,
++  `fileSize` INTEGER NOT NULL,
++  `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
++
++  UNIQUE INDEX `TutorialInlineImage_storageKey_key`(`storageKey`),
++  INDEX `TutorialInlineImage_tutorialId_idx`(`tutorialId`),
++  INDEX `TutorialInlineImage_uploadedById_createdAt_idx`(`uploadedById`, `createdAt`),
++  PRIMARY KEY (`id`)
++) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
++
++ALTER TABLE `TutorialInlineImage`
++  ADD CONSTRAINT `TutorialInlineImage_tutorialId_fkey`
++  FOREIGN KEY (`tutorialId`) REFERENCES `Tutorial`(`id`)
++  ON DELETE CASCADE ON UPDATE CASCADE;
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -23,6 +23,12 @@
+   --app-radius-control: 10px;
+   --app-shadow: 0 1px 2px rgba(0, 0, 0, 0.025), 0 8px 24px rgba(0, 0, 0, 0.035);
+   --app-shadow-float: 0 18px 50px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
++  --tutorial-text-default: #1d1d1f;
++  --tutorial-text-blue: #005eb8;
++  --tutorial-text-green: #18743b;
++  --tutorial-text-orange: #9a4d00;
++  --tutorial-text-red: #c51f32;
++  --tutorial-text-purple: #7d3faa;
+ }
+ 
+ html[data-theme="dark"] {
+@@ -43,8 +49,21 @@
+   --app-hover-strong: rgba(255, 255, 255, 0.14);
+   --app-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), 0 12px 32px rgba(0, 0, 0, 0.22);
+   --app-shadow-float: 0 22px 64px rgba(0, 0, 0, 0.52), 0 2px 10px rgba(0, 0, 0, 0.3);
++  --tutorial-text-default: #f5f5f7;
++  --tutorial-text-blue: #64b5ff;
++  --tutorial-text-green: #55d77d;
++  --tutorial-text-orange: #ffb454;
++  --tutorial-text-red: #ff6b67;
++  --tutorial-text-purple: #d49cff;
+ }
+ 
++[data-tutorial-color="default"] { color: var(--tutorial-text-default) !important; }
++[data-tutorial-color="blue"] { color: var(--tutorial-text-blue) !important; }
++[data-tutorial-color="green"] { color: var(--tutorial-text-green) !important; }
++[data-tutorial-color="orange"] { color: var(--tutorial-text-orange) !important; }
++[data-tutorial-color="red"] { color: var(--tutorial-text-red) !important; }
++[data-tutorial-color="purple"] { color: var(--tutorial-text-purple) !important; }
++
+ * {
+   box-sizing: border-box;
+ }
+--- a/src/components/tutorials/TutorialEditorForm.tsx
++++ b/src/components/tutorials/TutorialEditorForm.tsx
+@@ -1,8 +1,8 @@
+ /** 项目导读：教程组件：管理草稿、发布、附件和离开提醒；辛苦写的内容不能一返回就人间蒸发。 */
+ "use client";
+ 
+-import { useEffect, useRef, useState } from "react";
+-import { AlertTriangle, BookOpenCheck, FileText, Loader2, Paperclip, Save, Upload, X } from "lucide-react";
++import { useCallback, useEffect, useRef, useState } from "react";
++import { AlertTriangle, Bold, BookOpenCheck, FileText, ImagePlus, Italic, Loader2, Paperclip, Save, Strikethrough, Underline, Upload, X } from "lucide-react";
+ import { useRouter } from "next/navigation";
+ import { Button } from "@/components/ui/Button";
+ import { Card } from "@/components/ui/Card";
+@@ -11,6 +11,7 @@
+   id: string;
+   title: string;
+   content: string;
++  contentFormat: string;
+   category: string;
+   visibility: "ALL" | "ADMINS" | "VOLUNTEERS" | "PRIVATE";
+   status: "DRAFT" | "PUBLISHED";
+@@ -23,10 +24,14 @@
+ export function TutorialEditorForm({ tutorial }: { tutorial?: TutorialInput }) {
+   const router = useRouter();
+   const fileInputRef = useRef<HTMLInputElement>(null);
++  const inlineImageInputRef = useRef<HTMLInputElement>(null);
++  const editorRef = useRef<HTMLDivElement>(null);
++  const savedRangeRef = useRef<Range | null>(null);
++  const initialContentRef = useRef(toEditorContent(tutorial));
+   const [title, setTitle] = useState(tutorial?.title ?? "");
+   const [category, setCategory] = useState(tutorial?.category ?? "志愿服务");
+   const [visibility, setVisibility] = useState(tutorial?.visibility === "PRIVATE" ? "ADMINS" : tutorial?.visibility ?? "ALL");
+-  const [content, setContent] = useState(tutorial?.content ?? "");
++  const [content, setContent] = useState(initialContentRef.current);
+   const [tags, setTags] = useState(tutorial?.tags ?? "");
+   const [isPinned, setIsPinned] = useState(tutorial?.isPinned ?? false);
+   const [attachment, setAttachment] = useState<File | null>(null);
+@@ -34,21 +39,58 @@
+   const [submitting, setSubmitting] = useState<"DRAFT" | "PUBLISHED" | null>(null);
+   const [feedback, setFeedback] = useState("");
+   const [exitPromptOpen, setExitPromptOpen] = useState(false);
++  const [uploadingInlineImage, setUploadingInlineImage] = useState(false);
++  const [activeFormats, setActiveFormats] = useState(emptyFormatState);
++  const [activeTextColor, setActiveTextColor] = useState<TutorialTextColor | null>(null);
+   const allowNavigationRef = useRef(false);
+   const pendingNavigationRef = useRef<(() => void) | null>(null);
+   const restoringHistoryRef = useRef(false);
++  const pauseToolbarTrackingRef = useRef(false);
+ 
++  const updateToolbarState = useCallback(() => {
++    const editor = editorRef.current;
++    const selection = window.getSelection();
++    const anchorNode = selection?.anchorNode;
++    if (!editor || !selection?.rangeCount || !anchorNode || !editor.contains(anchorNode)) {
++      setActiveFormats(emptyFormatState);
++      setActiveTextColor(null);
++      return;
++    }
++
++    setActiveFormats({
++      bold: document.queryCommandState("bold"),
++      italic: document.queryCommandState("italic"),
++      underline: document.queryCommandState("underline"),
++      strikeThrough: document.queryCommandState("strikeThrough")
++    });
++    const anchorElement = anchorNode instanceof Element ? anchorNode : anchorNode.parentElement;
++    const color = anchorElement?.closest<HTMLElement>("[data-tutorial-color]")?.dataset.tutorialColor;
++    setActiveTextColor(color && color in tutorialTextColorMarkers ? color as TutorialTextColor : "default");
++  }, []);
++
+   const initialVisibility = tutorial?.visibility === "PRIVATE" ? "ADMINS" : tutorial?.visibility ?? "ALL";
+   const hasUnsavedChanges = title !== (tutorial?.title ?? "")
+     || category !== (tutorial?.category ?? "志愿服务")
+     || visibility !== initialVisibility
+-    || content !== (tutorial?.content ?? "")
++    || content !== initialContentRef.current
+     || tags !== (tutorial?.tags ?? "")
+     || isPinned !== (tutorial?.isPinned ?? false)
+     || Boolean(attachment)
+     || removeAttachment;
+ 
+   useEffect(() => {
++    if (editorRef.current && editorRef.current.innerHTML !== initialContentRef.current) editorRef.current.innerHTML = initialContentRef.current;
++  }, []);
++
++  useEffect(() => {
++    function handleSelectionChange() {
++      if (!pauseToolbarTrackingRef.current) updateToolbarState();
++    }
++    document.addEventListener("selectionchange", handleSelectionChange);
++    return () => document.removeEventListener("selectionchange", handleSelectionChange);
++  }, [updateToolbarState]);
++
++  useEffect(() => {
+     function requestNavigation(event: Event) {
+       if (!hasUnsavedChanges || allowNavigationRef.current) return;
+       event.preventDefault();
+@@ -102,6 +144,8 @@
+   }, [hasUnsavedChanges, router]);
+ 
+   async function save(status: "DRAFT" | "PUBLISHED", continueNavigation?: () => void) {
++    const currentContent = editorRef.current?.innerHTML.trim() ?? content;
++    setContent(currentContent);
+     if (!title.trim()) {
+       setFeedback("请填写教程标题");
+       return false;
+@@ -110,7 +154,7 @@
+       setFeedback("请填写教程分类");
+       return false;
+     }
+-    if (status === "PUBLISHED" && !content.trim()) {
++    if (status === "PUBLISHED" && editorIsEmpty(editorRef.current)) {
+       setFeedback("发布前请填写教程内容");
+       return false;
+     }
+@@ -121,7 +165,7 @@
+     form.set("title", title);
+     form.set("category", category);
+     form.set("visibility", visibility);
+-    form.set("content", content);
++    form.set("content", currentContent);
+     form.set("tags", tags);
+     form.set("isPinned", String(isPinned));
+     form.set("status", status);
+@@ -166,6 +210,118 @@
+   function cancelExit() {
+     pendingNavigationRef.current = null;
+     setExitPromptOpen(false);
++  }
++
++  function rememberSelection() {
++    const selection = window.getSelection();
++    const editor = editorRef.current;
++    if (!selection?.rangeCount || !editor) return;
++    const range = selection.getRangeAt(0);
++    if (editor.contains(range.commonAncestorContainer)) savedRangeRef.current = range.cloneRange();
++  }
++
++  function restoreSelection() {
++    const editor = editorRef.current;
++    if (!editor) return;
++    editor.focus();
++    const selection = window.getSelection();
++    selection?.removeAllRanges();
++    if (savedRangeRef.current && editor.contains(savedRangeRef.current.commonAncestorContainer)) {
++      selection?.addRange(savedRangeRef.current);
++      return;
++    }
++    const range = document.createRange();
++    range.selectNodeContents(editor);
++    range.collapse(false);
++    selection?.addRange(range);
++    savedRangeRef.current = range.cloneRange();
++  }
++
++  function syncEditorContent() {
++    if (!editorRef.current) return;
++    setContent(editorRef.current.innerHTML.trim());
++    rememberSelection();
++    updateToolbarState();
++  }
++
++  function format(command: string, value?: string) {
++    restoreSelection();
++    document.execCommand("styleWithCSS", false, "false");
++    document.execCommand(command, false, value);
++    syncEditorContent();
++  }
++
++  function applyTextColor(token: TutorialTextColor) {
++    const editor = editorRef.current;
++    if (!editor) return;
++    pauseToolbarTrackingRef.current = true;
++    restoreSelection();
++    document.execCommand("styleWithCSS", false, "false");
++    document.execCommand("foreColor", false, tutorialTextColorMarkers[token]);
++
++    const marker = tutorialTextColorMarkers[token].toLowerCase();
++    for (const font of editor.querySelectorAll<HTMLFontElement>("font[color]")) {
++      if (font.getAttribute("color")?.toLowerCase() !== marker) continue;
++      font.removeAttribute("color");
++      const colorSpan = document.createElement("span");
++      colorSpan.dataset.tutorialColor = token;
++      while (font.firstChild) colorSpan.appendChild(font.firstChild);
++      if (font.attributes.length) font.appendChild(colorSpan);
++      else font.replaceWith(colorSpan);
++      let parent = colorSpan.parentElement;
++      while (parent?.matches("span[data-tutorial-color]") && parent.childNodes.length === 1) {
++        const nextParent = parent.parentElement;
++        parent.replaceWith(colorSpan);
++        parent = nextParent;
++      }
++    }
++    syncEditorContent();
++    setActiveTextColor(token);
++    window.requestAnimationFrame(() => { pauseToolbarTrackingRef.current = false; });
++  }
++
++  async function insertInlineImage(file: File) {
++    setUploadingInlineImage(true);
++    setFeedback("");
++    const form = new FormData();
++    form.set("image", file);
++    try {
++      const response = await fetch("/api/tutorial-images", { method: "POST", body: form });
++      const result = (await response.json().catch(() => ({}))) as { data?: { id: string; fileName: string; url: string }; message?: string };
++      if (!response.ok || !result.data) {
++        setFeedback(result.message || "正文图片插入失败");
++        return;
++      }
++      restoreSelection();
++      const selection = window.getSelection();
++      const editor = editorRef.current;
++      const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
++      if (!editor || !selection || !range || !editor.contains(range.commonAncestorContainer)) {
++        setFeedback("没有找到图片插入位置，请重新点击正文后再试");
++        return;
++      }
++      const image = document.createElement("img");
++      image.src = result.data.url;
++      image.alt = result.data.fileName;
++      image.title = result.data.fileName;
++      image.dataset.imageId = result.data.id;
++      range.deleteContents();
++      range.insertNode(image);
++      const lineBreak = document.createElement("br");
++      range.setStartAfter(image);
++      range.collapse(true);
++      range.insertNode(lineBreak);
++      range.setStartAfter(lineBreak);
++      range.collapse(true);
++      selection.removeAllRanges();
++      selection.addRange(range);
++      syncEditorContent();
++    } catch {
++      setFeedback("网络异常，正文图片没有插入");
++    } finally {
++      setUploadingInlineImage(false);
++      if (inlineImageInputRef.current) inlineImageInputRef.current.value = "";
++    }
+   }
+ 
+   const currentAttachmentName = attachment?.name || (!removeAttachment ? tutorial?.attachmentFileName : null);
+@@ -187,8 +343,63 @@
+               <option value="ALL">所有人可见</option><option value="VOLUNTEERS">仅志愿者可见</option><option value="ADMINS">仅管理员可见</option>
+             </select>
+           </Field>
+-          <Field label="教程内容" wide>
+-            <textarea className={`${inputClass} min-h-80 resize-y py-3 leading-7`} onChange={(event) => setContent(event.target.value)} placeholder="按步骤填写教程内容；保存草稿时可以暂时留空" value={content} />
++          <Field group label="教程内容" wide>
++            <div className="overflow-hidden rounded-[14px] border border-black/[0.12] bg-white shadow-[inset_0_1px_1px_rgba(0,0,0,.02)] focus-within:border-[#0071e3]/60 focus-within:ring-4 focus-within:ring-[#0071e3]/10">
++              <div aria-label="教程正文格式工具" className="flex flex-wrap items-center gap-1 border-b border-black/[0.08] bg-black/[0.018] p-2" role="toolbar">
++                <FormatButton active={activeFormats.bold} label="加粗" onClick={() => format("bold")}><Bold size={17} /></FormatButton>
++                <FormatButton active={activeFormats.italic} label="斜体" onClick={() => format("italic")}><Italic size={17} /></FormatButton>
++                <FormatButton active={activeFormats.underline} label="下划线" onClick={() => format("underline")}><Underline size={17} /></FormatButton>
++                <FormatButton active={activeFormats.strikeThrough} label="删除线" onClick={() => format("strikeThrough")}><Strikethrough size={17} /></FormatButton>
++                <span aria-hidden="true" className="mx-1 h-6 w-px bg-black/[0.1]" />
++                <select aria-label="选择字体" className="h-10 min-w-[7.5rem] rounded-[9px] border border-black/[0.1] bg-white px-2 text-[13px] font-medium" defaultValue="" onChange={(event) => { if (event.target.value) format("fontName", event.target.value); event.target.value = ""; }} onMouseDown={rememberSelection}>
++                  <option disabled value="">字体</option>
++                  <option value="-apple-system, PingFang SC, Microsoft YaHei, sans-serif">默认字体</option>
++                  <option value="Songti SC, SimSun, serif">宋体</option>
++                  <option value="PingFang SC, Microsoft YaHei, sans-serif">黑体</option>
++                  <option value="Kaiti SC, KaiTi, serif">楷体</option>
++                  <option value="FangSong, STFangsong, serif">仿宋</option>
++                </select>
++                <select aria-label="选择字号" className="h-10 min-w-[6.25rem] rounded-[9px] border border-black/[0.1] bg-white px-2 text-[13px] font-medium" defaultValue="" onChange={(event) => { if (event.target.value) format("fontSize", event.target.value); event.target.value = ""; }} onMouseDown={rememberSelection}>
++                  <option disabled value="">字号</option>
++                  <option value="2">小号</option><option value="3">正文</option><option value="4">大号</option><option value="5">特大号</option><option value="6">标题号</option>
++                </select>
++                <div aria-label="选择文字颜色" className="flex flex-wrap items-center gap-0.5" role="group">
++                  {tutorialTextColorOptions.map((option) => (
++                    <button
++                      aria-label={option.label}
++                      aria-pressed={activeTextColor === option.token}
++                      className={`grid size-10 shrink-0 place-items-center rounded-[9px] transition active:scale-[0.92] ${activeTextColor === option.token ? "bg-[#0071e3]/12 ring-2 ring-inset ring-[#0071e3]/55" : "hover:bg-black/[0.055]"}`}
++                      key={option.token}
++                      onClick={() => applyTextColor(option.token)}
++                      onMouseDown={(event) => { event.preventDefault(); rememberSelection(); }}
++                      title={option.label}
++                      type="button"
++                    >
++                      <span className="size-5 rounded-full border border-black/15 shadow-[inset_0_0_0_1px_rgba(255,255,255,.12)]" style={{ background: option.swatch }} />
++                    </button>
++                  ))}
++                </div>
++                <span aria-hidden="true" className="mx-1 h-6 w-px bg-black/[0.1]" />
++                <button className="inline-flex min-h-10 items-center gap-2 rounded-[9px] px-3 text-[13px] font-semibold text-[#0066cc] transition hover:bg-[#0071e3]/10 active:scale-[0.96] disabled:opacity-45" disabled={uploadingInlineImage} onClick={() => { rememberSelection(); inlineImageInputRef.current?.click(); }} type="button">
++                  {uploadingInlineImage ? <Loader2 className="animate-spin" size={17} /> : <ImagePlus size={17} />}{uploadingInlineImage ? "图片处理中" : "插入图片"}
++                </button>
++                <input accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) void insertInlineImage(file); }} ref={inlineImageInputRef} type="file" />
++              </div>
++              <div
++                aria-label="教程内容编辑区"
++                className="min-h-80 px-4 py-3 text-[15px] font-normal leading-7 text-[#1d1d1f] outline-none [&:empty:before]:pointer-events-none [&:empty:before]:text-[#98989d] [&:empty:before]:content-[attr(data-placeholder)] [&_blockquote]:my-3 [&_blockquote]:border-l-4 [&_blockquote]:border-[#0071e3]/25 [&_blockquote]:pl-4 [&_h2]:my-4 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:my-3 [&_h3]:text-xl [&_h3]:font-semibold [&_img]:my-4 [&_img]:h-auto [&_img]:max-h-[70vh] [&_img]:max-w-full [&_img]:rounded-[12px] [&_img]:border [&_img]:border-black/[0.08] [&_img]:shadow-soft [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-2 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6"
++                contentEditable
++                data-placeholder="按步骤填写教程内容；保存草稿时可以暂时留空"
++                onBlur={syncEditorContent}
++                onFocus={updateToolbarState}
++                onInput={syncEditorContent}
++                onKeyUp={rememberSelection}
++                onMouseUp={rememberSelection}
++                ref={editorRef}
++                suppressContentEditableWarning
++              />
++            </div>
++            <p className="text-xs font-normal leading-5 text-[#86868b]">默认文字会随深浅模式自动切换；强调色均适配黑白背景。正文图片单张最大 20MB，每篇最多 30 张。</p>
+           </Field>
+           <Field label="标签" wide>
+             <input className={inputClass} maxLength={500} onChange={(event) => setTags(event.target.value)} placeholder="多个标签用逗号分隔，例如：新手,报名,时长" value={tags} />
+@@ -257,10 +468,73 @@
+ 
+ const inputClass = "h-11 w-full rounded-xl border border-black/[0.12] bg-white px-3.5 text-sm text-[#1d1d1f] outline-none transition focus:border-[#0071e3]/60 focus:ring-4 focus:ring-[#0071e3]/10";
+ 
+-function Field({ label, children, wide = false }: { label: string; children: React.ReactNode; wide?: boolean }) {
+-  return <label className={`grid gap-2 text-sm font-semibold text-[#3a3a3c] ${wide ? "sm:col-span-2" : ""}`}>{label}{children}</label>;
++type TutorialTextColor = keyof typeof tutorialTextColorMarkers;
++
++type FormatState = {
++  bold: boolean;
++  italic: boolean;
++  underline: boolean;
++  strikeThrough: boolean;
++};
++
++const emptyFormatState: FormatState = { bold: false, italic: false, underline: false, strikeThrough: false };
++
++const tutorialTextColorMarkers = {
++  default: "#010101",
++  blue: "#020202",
++  green: "#030303",
++  orange: "#040404",
++  red: "#050505",
++  purple: "#060606"
++} as const;
++
++const tutorialTextColorOptions: Array<{ token: TutorialTextColor; label: string; swatch: string }> = [
++  { token: "default", label: "默认文字（随模式变化）", swatch: "linear-gradient(135deg, #1d1d1f 0 50%, #f5f5f7 50% 100%)" },
++  { token: "blue", label: "强调蓝", swatch: "var(--tutorial-text-blue)" },
++  { token: "green", label: "成功绿", swatch: "var(--tutorial-text-green)" },
++  { token: "orange", label: "提醒橙", swatch: "var(--tutorial-text-orange)" },
++  { token: "red", label: "警示红", swatch: "var(--tutorial-text-red)" },
++  { token: "purple", label: "重点紫", swatch: "var(--tutorial-text-purple)" }
++];
++
++function Field({ label, children, wide = false, group = false }: { label: string; children: React.ReactNode; wide?: boolean; group?: boolean }) {
++  const className = `grid gap-2 text-sm font-semibold text-[#3a3a3c] ${wide ? "sm:col-span-2" : ""}`;
++  if (group) return <div className={className}><span>{label}</span>{children}</div>;
++  return <label className={className}>{label}{children}</label>;
+ }
+ 
++function FormatButton({ active, label, onClick, children }: { active: boolean; label: string; onClick: () => void; children: React.ReactNode }) {
++  return (
++    <button
++      aria-label={label}
++      aria-pressed={active}
++      className={`grid size-10 shrink-0 place-items-center rounded-[9px] transition active:scale-[0.94] ${active ? "bg-[#0071e3]/12 text-[#0066cc] ring-2 ring-inset ring-[#0071e3]/45" : "text-[#515154] hover:bg-black/[0.055] hover:text-[#1d1d1f]"}`}
++      onClick={onClick}
++      onMouseDown={(event) => event.preventDefault()}
++      title={label}
++      type="button"
++    >
++      {children}
++    </button>
++  );
++}
++
++function toEditorContent(tutorial?: TutorialInput) {
++  if (!tutorial?.content) return "";
++  if (tutorial.contentFormat === "RICH_TEXT") return tutorial.content;
++  return tutorial.content.split(/\r?\n/).map((line) => `<p>${escapeEditorHtml(line) || "<br>"}</p>`).join("");
++}
++
++function escapeEditorHtml(value: string) {
++  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
++}
++
++function editorIsEmpty(editor: HTMLDivElement | null) {
++  if (!editor) return true;
++  const text = editor.textContent?.replace(/\u00a0/g, " ").trim() ?? "";
++  return !text && !editor.querySelector("img[data-image-id]");
++}
++
+ function formatFileSize(size?: number | null) {
+   if (!size) return "大小未知";
+   if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
+--- a/src/lib/tutorial-form.ts
++++ b/src/lib/tutorial-form.ts
+@@ -2,6 +2,7 @@
+ import type { NextRequest } from "next/server";
+ import { validateResourceName } from "@/lib/resource-drive";
+ import { MAX_TUTORIAL_ATTACHMENT_SIZE } from "@/lib/resource-storage";
++import { extractTutorialInlineImageIds, isTutorialContentEmpty, MAX_TUTORIAL_CONTENT_LENGTH, MAX_TUTORIAL_INLINE_IMAGES, sanitizeTutorialHtml } from "@/lib/tutorial-content";
+ 
+ export async function readTutorialForm(request: NextRequest) {
+   let form: FormData;
+@@ -12,7 +13,8 @@
+   }
+ 
+   const title = textValue(form, "title").slice(0, 150);
+-  const content = textValue(form, "content");
++  const content = sanitizeTutorialHtml(textValue(form, "content"));
++  const inlineImageIds = extractTutorialInlineImageIds(content);
+   const category = textValue(form, "category").slice(0, 50);
+   const tags = textValue(form, "tags").slice(0, 500) || null;
+   const visibilityValue = textValue(form, "visibility");
+@@ -27,13 +29,16 @@
+   if (!category) return { error: "请选择教程分类", status: 400 } as const;
+   if (!visibility) return { error: "请选择有效的可见范围", status: 400 } as const;
+   if (!tutorialStatus) return { error: "请选择保存草稿或发布教程", status: 400 } as const;
+-  if (tutorialStatus === "PUBLISHED" && !content.trim()) return { error: "发布教程前请填写教程内容", status: 400 } as const;
++  if (content.length > MAX_TUTORIAL_CONTENT_LENGTH) return { error: "教程正文排版内容过长，请精简后再保存", status: 413 } as const;
++  if (inlineImageIds.length > MAX_TUTORIAL_INLINE_IMAGES) return { error: `每篇教程最多插入 ${MAX_TUTORIAL_INLINE_IMAGES} 张图片`, status: 413 } as const;
++  if (tutorialStatus === "PUBLISHED" && isTutorialContentEmpty(content)) return { error: "发布教程前请填写教程内容", status: 400 } as const;
+   if (attachment && !attachmentName) return { error: "附件文件名无效", status: 400 } as const;
+   if (attachment && attachment.size > MAX_TUTORIAL_ATTACHMENT_SIZE) return { error: "教程附件不能超过 100MB", status: 413 } as const;
+ 
+   return {
+     title,
+     content,
++    inlineImageIds,
+     category,
+     tags,
+     visibility,
+--- a/src/lib/tutorial-content.ts
++++ b/src/lib/tutorial-content.ts
+@@ -0,0 +1,60 @@
++/** 项目导读：教程富文本安检口：允许排版，拒绝脚本；字体可以花，安全底线不能花。 */
++import sanitizeHtml from "sanitize-html";
++
++export const MAX_TUTORIAL_CONTENT_LENGTH = 60_000;
++export const MAX_TUTORIAL_INLINE_IMAGES = 30;
++
++const imageSourcePattern = /^\/api\/tutorial-images\/([A-Za-z0-9_-]{8,64})$/;
++const tutorialTextColors = new Set(["default", "blue", "green", "orange", "red", "purple"]);
++
++export function sanitizeTutorialHtml(value: string) {
++  return sanitizeHtml(value, {
++    allowedTags: [
++      "p", "div", "br", "span", "strong", "b", "em", "i", "u", "s", "strike", "font",
++      "h2", "h3", "h4", "ul", "ol", "li", "blockquote", "img"
++    ],
++    allowedAttributes: {
++      font: ["face", "size"],
++      span: ["data-tutorial-color"],
++      img: ["src", "alt", "title", "data-image-id"]
++    },
++    allowedSchemes: [],
++    allowedSchemesByTag: { img: [] },
++    allowProtocolRelative: false,
++    disallowedTagsMode: "discard",
++    transformTags: {
++      span(tagName, attribs) {
++        const color = attribs["data-tutorial-color"];
++        const safeAttributes: Record<string, string> = color && tutorialTextColors.has(color) ? { "data-tutorial-color": color } : {};
++        return { tagName, attribs: safeAttributes };
++      }
++    },
++    exclusiveFilter(frame) {
++      if (frame.tag !== "img") return false;
++      const match = frame.attribs.src?.match(imageSourcePattern);
++      return !match || frame.attribs["data-image-id"] !== match[1];
++    }
++  }).trim();
++}
++
++export function extractTutorialInlineImageIds(html: string) {
++  const ids: string[] = [];
++  const pattern = /<img\b[^>]*\bdata-image-id="([A-Za-z0-9_-]{8,64})"[^>]*>/g;
++  for (const match of html.matchAll(pattern)) {
++    if (!ids.includes(match[1])) ids.push(match[1]);
++  }
++  return ids;
++}
++
++export function isTutorialContentEmpty(html: string) {
++  if (extractTutorialInlineImageIds(html).length) return false;
++  return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} }).replace(/\u00a0/g, " ").trim().length === 0;
++}
++
++export function plainTutorialContentToHtml(value: string) {
++  return value.split(/\r?\n/).map((line) => `<p>${escapeHtml(line) || "<br>"}</p>`).join("");
++}
++
++function escapeHtml(value: string) {
++  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
++}
+--- a/src/lib/tutorial-inline-images.ts
++++ b/src/lib/tutorial-inline-images.ts
+@@ -0,0 +1,35 @@
++/** 项目导读：教程正文图片仓库：先压成 1080p JPG 再落盘，大图也得先减轻行李再进正文。 */
++import { randomUUID } from "node:crypto";
++import path from "node:path";
++import { prisma } from "@/lib/db";
++import { createImagePreview, getPreviewKind, getStoredFile, moveStoredFile, removeStoredKeys, storeUploadedFile } from "@/lib/resource-storage";
++
++export const MAX_TUTORIAL_INLINE_IMAGE_SIZE = 20 * 1024 * 1024;
++
++export async function storeTutorialInlineImage(file: File, uploadedById: string) {
++  if (file.size > MAX_TUTORIAL_INLINE_IMAGE_SIZE) throw new Error("正文图片不能超过 20MB");
++  if (getPreviewKind(file.name, file.type) !== "image") throw new Error("正文只能插入 JPG、PNG、GIF、WebP、BMP 或 TIFF 图片");
++
++  const id = randomUUID();
++  const extension = path.extname(file.name).toLowerCase().replace(/[^.a-z0-9]/g, "") || ".image";
++  const temporaryKey = path.posix.join("temp", "tutorial-inline-images", `${id}${extension}`);
++  const storageKey = path.posix.join("originals", "tutorial-images", `${id}.jpg`);
++
++  await prisma.tutorialInlineImage.create({
++    data: { id, tutorialId: null, storageKey, uploadedById, fileName: `${path.parse(file.name).name}.jpg`, fileSize: 0 }
++  });
++
++  try {
++    const stored = await storeUploadedFile(file, temporaryKey);
++    const generated = await createImagePreview(stored);
++    await moveStoredFile(generated.previewKey, storageKey);
++    await removeStoredKeys([temporaryKey]);
++    const compressed = await getStoredFile(storageKey);
++    const image = await prisma.tutorialInlineImage.update({ where: { id }, data: { fileSize: compressed.size } });
++    return { id: image.id, fileName: image.fileName, fileSize: image.fileSize, url: `/api/tutorial-images/${image.id}` };
++  } catch (error) {
++    await prisma.tutorialInlineImage.delete({ where: { id } }).catch(() => undefined);
++    await removeStoredKeys([temporaryKey, storageKey]);
++    throw error;
++  }
++}
+--- a/src/app/api/tutorials/route.ts
++++ b/src/app/api/tutorials/route.ts
+@@ -22,18 +22,30 @@
+   const parsed = await readTutorialForm(request);
+   if ("error" in parsed) return NextResponse.json({ message: parsed.error }, { status: parsed.status });
+ 
+-  const tutorial = await prisma.tutorial.create({
+-    data: {
+-      title: parsed.title,
+-      content: parsed.content,
+-      category: parsed.category,
+-      visibility: parsed.visibility,
+-      status: parsed.statusValue,
+-      publishedAt: parsed.statusValue === "PUBLISHED" ? new Date() : null,
+-      tags: parsed.tags,
+-      isPinned: parsed.isPinned,
+-      authorId: auth.user.id
++  const inlineImages = parsed.inlineImageIds.length ? await prisma.tutorialInlineImage.findMany({ where: { id: { in: parsed.inlineImageIds } } }) : [];
++  if (inlineImages.length !== parsed.inlineImageIds.length || inlineImages.some((image) => image.tutorialId || image.uploadedById !== auth.user!.id)) {
++    return NextResponse.json({ message: "正文中包含无效或无权使用的图片，请重新插入" }, { status: 400 });
++  }
++
++  const tutorial = await prisma.$transaction(async (tx) => {
++    const created = await tx.tutorial.create({
++      data: {
++        title: parsed.title,
++        content: parsed.content,
++        contentFormat: "RICH_TEXT",
++        category: parsed.category,
++        visibility: parsed.visibility,
++        status: parsed.statusValue,
++        publishedAt: parsed.statusValue === "PUBLISHED" ? new Date() : null,
++        tags: parsed.tags,
++        isPinned: parsed.isPinned,
++        authorId: auth.user!.id
++      }
++    });
++    if (parsed.inlineImageIds.length) {
++      await tx.tutorialInlineImage.updateMany({ where: { id: { in: parsed.inlineImageIds }, tutorialId: null, uploadedById: auth.user!.id }, data: { tutorialId: created.id } });
+     }
++    return created;
+   });
+ 
+   if (!parsed.attachment) {
+@@ -55,8 +67,9 @@
+     });
+     return NextResponse.json({ data: updated, message: parsed.statusValue === "PUBLISHED" ? "教程及附件已发布" : "草稿及附件已保存" }, { status: 201 });
+   } catch (error) {
++    const claimedImages = await prisma.tutorialInlineImage.findMany({ where: { tutorialId: tutorial.id }, select: { storageKey: true } }).catch(() => []);
+     await prisma.tutorial.delete({ where: { id: tutorial.id } }).catch(() => undefined);
+-    await removeStoredKeys([storageKey]);
++    await removeStoredKeys([storageKey, ...claimedImages.map((image) => image.storageKey)]);
+     return NextResponse.json({ message: error instanceof Error ? error.message : "教程附件保存失败" }, { status: 500 });
+   }
+ }
+--- a/src/app/api/tutorials/[id]/route.ts
++++ b/src/app/api/tutorials/[id]/route.ts
+@@ -12,11 +12,16 @@
+   const auth = await requireApiAdmin();
+   if (auth.response) return auth.response;
+   const { id } = await params;
+-  const existing = await prisma.tutorial.findUnique({ where: { id } });
++  const existing = await prisma.tutorial.findUnique({ where: { id }, include: { inlineImages: true } });
+   if (!existing) return NextResponse.json({ message: "教程不存在" }, { status: 404 });
+ 
+   const parsed = await readTutorialForm(request);
+   if ("error" in parsed) return NextResponse.json({ message: parsed.error }, { status: parsed.status });
++  const requestedImages = parsed.inlineImageIds.length ? await prisma.tutorialInlineImage.findMany({ where: { id: { in: parsed.inlineImageIds } } }) : [];
++  if (requestedImages.length !== parsed.inlineImageIds.length || requestedImages.some((image) => image.tutorialId !== id && (image.tutorialId || image.uploadedById !== auth.user!.id))) {
++    return NextResponse.json({ message: "正文中包含无效或无权使用的图片，请重新插入" }, { status: 400 });
++  }
++  const removedInlineImages = existing.inlineImages.filter((image) => !parsed.inlineImageIds.includes(image.id));
+   let newStorageKey: string | null = null;
+ 
+   try {
+@@ -24,28 +29,37 @@
+       newStorageKey = getTutorialAttachmentStorageKey(id, parsed.attachmentName!);
+       await storeUploadedFile(parsed.attachment, newStorageKey);
+     }
+-    const tutorial = await prisma.tutorial.update({
+-      where: { id },
+-      data: {
+-        title: parsed.title,
+-        content: parsed.content,
+-        category: parsed.category,
+-        visibility: parsed.visibility,
+-        status: parsed.statusValue,
+-        publishedAt: parsed.statusValue === "PUBLISHED" ? existing.publishedAt ?? new Date() : null,
+-        tags: parsed.tags,
+-        isPinned: parsed.isPinned,
+-        ...((parsed.attachment || parsed.removeAttachment) ? {
+-          attachmentStorageKey: newStorageKey,
+-          attachmentFileName: parsed.attachmentName,
+-          attachmentFileType: parsed.attachment?.type || null,
+-          attachmentFileSize: parsed.attachment?.size || null
+-        } : {})
++    const tutorial = await prisma.$transaction(async (tx) => {
++      const updated = await tx.tutorial.update({
++        where: { id },
++        data: {
++          title: parsed.title,
++          content: parsed.content,
++          contentFormat: "RICH_TEXT",
++          category: parsed.category,
++          visibility: parsed.visibility,
++          status: parsed.statusValue,
++          publishedAt: parsed.statusValue === "PUBLISHED" ? existing.publishedAt ?? new Date() : null,
++          tags: parsed.tags,
++          isPinned: parsed.isPinned,
++          ...((parsed.attachment || parsed.removeAttachment) ? {
++            attachmentStorageKey: newStorageKey,
++            attachmentFileName: parsed.attachmentName,
++            attachmentFileType: parsed.attachment?.type || null,
++            attachmentFileSize: parsed.attachment?.size || null
++          } : {})
++        }
++      });
++      if (parsed.inlineImageIds.length) {
++        await tx.tutorialInlineImage.updateMany({ where: { id: { in: parsed.inlineImageIds }, tutorialId: null, uploadedById: auth.user!.id }, data: { tutorialId: id } });
+       }
++      await tx.tutorialInlineImage.deleteMany({ where: { tutorialId: id, ...(parsed.inlineImageIds.length ? { id: { notIn: parsed.inlineImageIds } } : {}) } });
++      return updated;
+     });
+     if ((parsed.attachment || parsed.removeAttachment) && existing.attachmentStorageKey !== newStorageKey) {
+       await removeStoredKeys([existing.attachmentStorageKey]);
+     }
++    await removeStoredKeys(removedInlineImages.map((image) => image.storageKey));
+     return NextResponse.json({ data: tutorial, message: parsed.statusValue === "PUBLISHED" ? "教程已发布" : "草稿已保存" });
+   } catch (error) {
+     await removeStoredKeys([newStorageKey]);
+@@ -57,9 +71,9 @@
+   const auth = await requireApiAdmin();
+   if (auth.response) return auth.response;
+   const { id } = await params;
+-  const tutorial = await prisma.tutorial.findUnique({ where: { id }, select: { attachmentStorageKey: true } });
++  const tutorial = await prisma.tutorial.findUnique({ where: { id }, select: { attachmentStorageKey: true, inlineImages: { select: { storageKey: true } } } });
+   if (!tutorial) return NextResponse.json({ message: "教程不存在" }, { status: 404 });
+   await prisma.tutorial.delete({ where: { id } });
+-  await removeStoredKeys([tutorial.attachmentStorageKey]);
++  await removeStoredKeys([tutorial.attachmentStorageKey, ...tutorial.inlineImages.map((image) => image.storageKey)]);
+   return NextResponse.json({ message: "教程及附件已永久删除" });
+ }
+--- a/src/app/api/tutorial-images/route.ts
++++ b/src/app/api/tutorial-images/route.ts
+@@ -0,0 +1,28 @@
++/** 项目导读：教程正文图片上传口：只收图片、先压缩、再给编辑器一个能长期认账的地址。 */
++import { NextResponse, type NextRequest } from "next/server";
++import { requireApiAdmin } from "@/app/api/_utils";
++import { storeTutorialInlineImage } from "@/lib/tutorial-inline-images";
++
++export const runtime = "nodejs";
++
++export async function POST(request: NextRequest) {
++  const auth = await requireApiAdmin();
++  if (auth.response || !auth.user) return auth.response;
++
++  let image: File | null = null;
++  try {
++    const form = await request.formData();
++    const value = form.get("image");
++    image = value instanceof File && value.size > 0 ? value : null;
++  } catch {
++    return NextResponse.json({ message: "无法读取图片" }, { status: 400 });
++  }
++  if (!image) return NextResponse.json({ message: "请选择要插入的图片" }, { status: 400 });
++
++  try {
++    const data = await storeTutorialInlineImage(image, auth.user.id);
++    return NextResponse.json({ data, message: "图片已插入" }, { status: 201 });
++  } catch (error) {
++    return NextResponse.json({ message: error instanceof Error ? error.message : "图片处理失败" }, { status: 400 });
++  }
++}
+--- a/src/app/api/tutorial-images/[id]/route.ts
++++ b/src/app/api/tutorial-images/[id]/route.ts
+@@ -0,0 +1,38 @@
++/** 项目导读：教程正文图片读取口：图片虽在正文里露脸，权限还是跟着教程走，不能翻墙串门。 */
++import { NextResponse, type NextRequest } from "next/server";
++import { requireApiUser } from "@/app/api/_utils";
++import { prisma } from "@/lib/db";
++import { getStoredFile } from "@/lib/resource-storage";
++
++export const runtime = "nodejs";
++
++export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  const auth = await requireApiUser();
++  if (auth.response || !auth.user) return auth.response;
++  const { id } = await params;
++  const image = await prisma.tutorialInlineImage.findUnique({
++    where: { id },
++    include: { tutorial: { select: { status: true, visibility: true } } }
++  });
++  if (!image) return NextResponse.json({ message: "正文图片不存在" }, { status: 404 });
++
++  const volunteerAllowed = image.tutorial?.status === "PUBLISHED" && ["ALL", "VOLUNTEERS"].includes(image.tutorial.visibility);
++  const pendingAllowed = !image.tutorialId && (auth.user.id === image.uploadedById || auth.user.role === "super_admin");
++  const allowed = auth.user.role !== "volunteer" ? Boolean(image.tutorialId) || pendingAllowed : volunteerAllowed;
++  if (!allowed) return NextResponse.json({ message: "正文图片不存在或无权访问" }, { status: 404 });
++
++  try {
++    const stored = await getStoredFile(image.storageKey);
++    return new Response(stored.stream as never, {
++      headers: {
++        "Content-Type": "image/jpeg",
++        "Content-Length": String(stored.size),
++        "Content-Disposition": `inline; filename="${image.id}.jpg"`,
++        "Cache-Control": "private, no-store",
++        "X-Content-Type-Options": "nosniff"
++      }
++    });
++  } catch {
++    return NextResponse.json({ message: "磁盘中的正文图片不存在" }, { status: 404 });
++  }
++}
+--- a/src/app/volunteer/tutorials/[id]/page.tsx
++++ b/src/app/volunteer/tutorials/[id]/page.tsx
+@@ -18,7 +18,12 @@
+       <div className="grid gap-5">
+         <Card className="p-6 sm:p-8">
+           <div className="mb-6 flex flex-wrap gap-2"><Badge variant="blue">{tutorial.category}</Badge>{tutorial.isPinned ? <Badge variant="amber">置顶</Badge> : null}</div>
+-          <div className="whitespace-pre-wrap text-[15px] leading-8 text-[#3a3a3c]">{tutorial.content}</div>
++          {tutorial.contentFormat === "RICH_TEXT" ? (
++            <div
++              className="tutorial-rich-content break-words text-[15px] leading-8 text-[#3a3a3c] [&_blockquote]:my-4 [&_blockquote]:border-l-4 [&_blockquote]:border-[#0071e3]/25 [&_blockquote]:pl-4 [&_font]:leading-inherit [&_h2]:my-5 [&_h2]:text-2xl [&_h2]:font-semibold [&_h3]:my-4 [&_h3]:text-xl [&_h3]:font-semibold [&_h4]:my-3 [&_h4]:text-lg [&_h4]:font-semibold [&_img]:my-5 [&_img]:h-auto [&_img]:max-h-[75vh] [&_img]:max-w-full [&_img]:rounded-[14px] [&_img]:border [&_img]:border-black/[0.08] [&_img]:shadow-soft [&_li]:my-1 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:my-3 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6"
++              dangerouslySetInnerHTML={{ __html: tutorial.content }}
++            />
++          ) : <div className="whitespace-pre-wrap text-[15px] leading-8 text-[#3a3a3c]">{tutorial.content}</div>}
+         </Card>
+         {tutorial.attachmentFileName ? <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+           <div className="flex min-w-0 items-center gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#0071e3]/10 text-[#0066cc]"><Paperclip size={19} /></span><div className="min-w-0"><p className="truncate text-sm font-semibold text-[#1d1d1f]">{tutorial.attachmentFileName}</p><p className="mt-1 text-xs text-[#86868b]">教程附件 · {formatFileSize(tutorial.attachmentFileSize)}</p></div></div>
+--- a/src/lib/data.ts
++++ b/src/lib/data.ts
+@@ -1,6 +1,7 @@
+ /** 项目导读：服务端数据总入口：集中查询并整理页面需要的数据；这里负责端菜，不让组件自己下田插秧。 */
+ import { prisma } from "@/lib/db";
+ import { getPreviewKind } from "@/lib/resource-storage";
++import { sanitizeTutorialHtml } from "@/lib/tutorial-content";
+ 
+ const taskStatusLabels: Record<string, string> = {
+   DRAFT: "草稿",
+@@ -874,7 +875,8 @@
+   return {
+     id: tutorial.id,
+     title: tutorial.title,
+-    content: tutorial.content,
++    content: tutorial.contentFormat === "RICH_TEXT" ? sanitizeTutorialHtml(tutorial.content) : tutorial.content,
++    contentFormat: tutorial.contentFormat,
+     category: tutorial.category,
+     author: tutorial.author.name,
+     visibility: tutorial.visibility,
+--- a/scripts/cleanup-storage.mjs
++++ b/scripts/cleanup-storage.mjs
+@@ -13,6 +13,7 @@
+ const storageRoot = resolveSafeStorageRoot(process.env.FILE_STORAGE_ROOT);
+ const tempRetentionHours = readPositiveNumber("TEMP_FILE_RETENTION_HOURS", 24);
+ const orphanPreviewRetentionDays = readPositiveNumber("ORPHAN_PREVIEW_RETENTION_DAYS", 7);
++const tutorialImageRetentionHours = readPositiveNumber("TUTORIAL_INLINE_IMAGE_RETENTION_HOURS", 24);
+ const now = Date.now();
+ const prisma = new PrismaClient();
+ 
+@@ -33,16 +34,21 @@
+     referencedKeys,
+     now - orphanPreviewRetentionDays * 24 * 60 * 60 * 1000
+   );
++  const tutorialImageResult = await cleanAbandonedTutorialImages(
++    now - tutorialImageRetentionHours * 60 * 60 * 1000
++  );
+ 
+   console.log(JSON.stringify({
+     dryRun,
+     storageRoot,
+     retention: {
+       tempHours: tempRetentionHours,
+-      orphanPreviewDays: orphanPreviewRetentionDays
++      orphanPreviewDays: orphanPreviewRetentionDays,
++      tutorialInlineImageHours: tutorialImageRetentionHours
+     },
+     temp: tempResult,
+-    orphanPreviews: previewResult
++    orphanPreviews: previewResult,
++    abandonedTutorialImages: tutorialImageResult
+   }, null, 2));
+ } finally {
+   await prisma.$disconnect();
+@@ -94,6 +100,31 @@
+   return { scanned: entries.filter((entry) => entry.isFile()).length, preserved, candidates, removed };
+ }
+ 
++async function cleanAbandonedTutorialImages(expiresBefore) {
++  const candidates = await prisma.tutorialInlineImage.findMany({
++    where: { tutorialId: null, createdAt: { lt: new Date(expiresBefore) } },
++    select: { id: true, storageKey: true }
++  });
++  if (dryRun || candidates.length === 0) return { candidates: candidates.length, removed: 0 };
++
++  let removed = 0;
++  for (const image of candidates) {
++    const deleted = await prisma.tutorialInlineImage.deleteMany({ where: { id: image.id, tutorialId: null } });
++    if (!deleted.count) continue;
++    await removeStorageKey(image.storageKey);
++    removed += 1;
++  }
++  return { candidates: candidates.length, removed };
++}
++
++async function removeStorageKey(storageKey) {
++  const absolutePath = path.resolve(storageRoot, storageKey);
++  if (absolutePath !== storageRoot && !absolutePath.startsWith(`${storageRoot}${path.sep}`)) {
++    throw new Error(`拒绝清理存储根目录外的路径：${storageKey}`);
++  }
++  await fs.rm(absolutePath, { force: true });
++}
++
+ async function readDirectoryOrEmpty(directory) {
+   try {
+     return await fs.readdir(directory, { withFileTypes: true });
+--- a/README.md
++++ b/README.md
+@@ -57,7 +57,7 @@
+ - 课表查询条件可自由组合：日期、时间点、姓名/学号、专业和班级。只选择日期时显示全体志愿者当日时间线：绿色为空闲、红色为上课、相邻课程间不超过 60 分钟的空档为黄色；悬停或点按可查看对应时间。只选择时间点时按当天判断。
+ - 查看志愿者列表、资料完整度和账号状态，并进入个人详情或课表。
+ - 通过独立的“特长词云”查看特长分布；点击词条显示对应同学，管理员可继续进入志愿者详情。
+-- 创建、编辑、发布和删除教程；编辑过程中可保存草稿、上传单个最大 100 MB 的附件。离开存在未保存内容的编辑页时，必须选择保存草稿、放弃修改或继续编辑。
++- 创建、编辑、发布和删除教程；富文本正文支持字体、字号、有限强调色、加粗、斜体、下划线、删除线和在光标位置插入图片。格式按钮会像 Office 一样实时显示当前光标或输入状态，正在使用的格式与色块保持蓝色选中提示。默认文字会随深浅模式自动使用黑/白文字，强调色仅提供蓝、绿、橙、红、紫五组双主题适配色，不开放任意取色。编辑过程中仍可保存草稿并上传单个最大 100 MB 的附件。正文图片单张最大 20 MB、每篇最多 30 张，落盘前统一压缩为 1080p 范围内 JPG。离开存在未保存内容的编辑页时，必须选择保存草稿、放弃修改或继续编辑。
+ - 管理资料中心的活动项目、文件夹和文件：支持按精确文件名关键词及上传日期全局搜索、文件夹打包下载、批量下载、批量移动、批量删除、拖拽移动和悬停面包屑进入上级目录。
+ - 资料中心预览会在新标签页打开；图片、视频和 Office 文件按类型生成网页预览。
+ - 在“个人信息”修改姓名、登录账号和密码；管理员页面不显示志愿者使用的电话、QQ、微信编辑区域。
+@@ -118,6 +118,7 @@
+ | --- | ---: | --- |
+ | 资料中心文件 | 界面提示 100 MB；硬限制 500 MB | 保留原文件；按类型生成预览 |
+ | 教程附件 | 100 MB | 保留原文件，随教程下载 |
++| 教程正文图片 | 20 MB/张，每篇最多 30 张 | 转为 1080p 范围内 JPG，跟随教程权限显示 |
+ | 志愿时长/任务证明 | 20 MB | 图片转为 1080p 以内 JPG，其他支持格式生成预览 |
+ | 个人课表 | 5 MB | 仅接受 `.xls`、`.xlsx`，保存解析结果而非课表原文件 |
+ 
+@@ -203,6 +204,7 @@
+ # 清理策略：过期临时文件 24 小时，孤立预览文件 7 天。
+ TEMP_FILE_RETENTION_HOURS="24"
+ ORPHAN_PREVIEW_RETENTION_DAYS="7"
++TUTORIAL_INLINE_IMAGE_RETENTION_HOURS="24"
+ ```
+ 
+ 代码当前实际读取的环境变量只有：
+@@ -215,6 +217,7 @@
+ | `FFMPEG_PATH` | 否 | FFmpeg 路径，默认 `ffmpeg` |
+ | `TEMP_FILE_RETENTION_HOURS` | 否 | `temp/` 临时内容保留小时数，默认 24 |
+ | `ORPHAN_PREVIEW_RETENTION_DAYS` | 否 | 数据库未引用的预览文件保留天数，默认 7 |
++| `TUTORIAL_INLINE_IMAGE_RETENTION_HOURS` | 否 | 已上传但未随教程保存的正文图片保留小时数，默认 24 |
+ 
+ `.env.example` 中的 `NEXTAUTH_SECRET` 和 `NEXTAUTH_URL` 目前未被登录代码使用，不能依赖它们保护当前会话。
+ 
+@@ -474,7 +477,7 @@
+ 
+ ```text
+ wenti-storage/
+-├── originals/       # 资料中心目录树，以及 tutorials/<教程ID>/ 下的教程附件
++├── originals/       # 资料中心目录树、教程附件和 tutorial-images/ 正文图片
+ ├── hour-proofs/     # 自主申报志愿时长的非图片证明原文件
+ ├── task-proofs/     # 任务完成申报的非图片证明原文件
+ ├── proof-previews/  # 证明材料的 JPG、MP4、PDF 和视频海报预览
+@@ -531,6 +534,7 @@
+ - 删除超过 `TEMP_FILE_RETENTION_HOURS` 的 `temp/` 顶层内容，默认保留 24 小时。
+ - 扫描 `previews/` 中的 PDF、图片、视频和海报。
+ - 只删除数据库 `FileResource` 已不再引用，并且超过 `ORPHAN_PREVIEW_RETENTION_DAYS` 的孤立预览，默认保留 7 天。
++- 删除超过 `TUTORIAL_INLINE_IMAGE_RETENTION_HOURS` 仍未绑定教程的正文图片数据库记录和 JPG，默认保留 24 小时；已保存教程中的图片不会被此规则删除。
+ - 数据库仍在引用的 PDF 和其他预览属于业务缓存，清理脚本会保留，否则网页预览会失效。
+ - 即使预览因人工操作或磁盘故障意外缺失，用户下次访问时也会按需重新生成；原文件缺失时无法恢复。
+ - `originals/` 原文件不在定时清理范围内。
+--- a/README_DEPLOY.md
++++ b/README_DEPLOY.md
+@@ -259,6 +259,7 @@
+ FFMPEG_PATH="/usr/bin/ffmpeg"
+ TEMP_FILE_RETENTION_HOURS="24"
+ ORPHAN_PREVIEW_RETENTION_DAYS="7"
++TUTORIAL_INLINE_IMAGE_RETENTION_HOURS="24"
+ ```
+ 
+ 设置权限：
+@@ -483,7 +484,8 @@
+ 
+ - 资料中心创建项目、上传、下载、搜索文件名、按日期筛选、移动和删除正常。
+ - 图片、视频和 Office 预览能在新标签页打开。
+-- 教程可保存草稿、发布、上传附件、删除；存在未保存内容时离开页面会提示。
++- 教程可保存草稿、发布、上传附件、删除；正文工具栏可设置字体、字号、粗体、斜体、下划线、删除线并在光标处插图，当前光标或后续输入正在使用的格式按钮和颜色色块会保持选中提示。文字颜色只提供默认、蓝、绿、橙、红、紫六项，默认色随深浅模式切换，其余强调色也分别适配黑白背景，不允许任意取色；正文图片能在志愿者端显示；存在未保存内容时离开页面会提示。
++- 教程正文图片单张超过 20 MB 或每篇超过 30 张时会拒绝保存；图片落盘后为 1080p 范围内 JPG，删除教程或移除图片后磁盘文件同步删除。
+ 
+ ### 账号与消息
+ 
+--- a/.env.example
++++ b/.env.example
+@@ -4,5 +4,6 @@
+ FFMPEG_PATH="/usr/bin/ffmpeg"
+ TEMP_FILE_RETENTION_HOURS="24"
+ ORPHAN_PREVIEW_RETENTION_DAYS="7"
++TUTORIAL_INLINE_IMAGE_RETENTION_HOURS="24"
+ NEXTAUTH_SECRET="replace-with-a-long-random-secret"
+ NEXTAUTH_URL="http://localhost:3000"

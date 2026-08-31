@@ -1,0 +1,48 @@
+{
+  "name": "wenti-management",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:seed": "prisma db seed",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "storage:sync-tree": "node scripts/sync-resource-storage-tree.mjs",
+    "storage:sync-tree:dry-run": "node scripts/sync-resource-storage-tree.mjs --dry-run",
+    "storage:cleanup": "node scripts/cleanup-storage.mjs",
+    "storage:cleanup:dry-run": "node scripts/cleanup-storage.mjs --dry-run"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "6.1.0",
+    "archiver": "^7.0.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "0.468.0",
+    "next": "^15.1.11",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "sanitize-html": "^2.17.7",
+    "tailwind-merge": "^2.6.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/archiver": "^6.0.4",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@types/sanitize-html": "^2.16.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "15.1.7",
+    "postcss": "^8.4.49",
+    "prisma": "6.1.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}

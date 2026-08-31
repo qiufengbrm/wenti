@@ -1,0 +1,8 @@
+ALTER TABLE `VolunteerHour`
+  ADD COLUMN `serviceStartAt` DATETIME(3) NULL,
+  ADD COLUMN `serviceEndAt` DATETIME(3) NULL,
+  ADD COLUMN `proofFileUrl` VARCHAR(191) NULL,
+  ADD COLUMN `proofFileName` VARCHAR(191) NULL,
+  ADD COLUMN `proofFileType` VARCHAR(191) NULL,
+  ADD COLUMN `proofFileSize` INTEGER NULL,
+  ADD COLUMN `rejectReason` TEXT NULL;
