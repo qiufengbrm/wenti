@@ -6,6 +6,45 @@
 
 需要交给另一台服务器上的 AI 或运维人员快速部署时，请直接使用独立的 [README_DEPLOY.md](./README_DEPLOY.md)。该文档包含分阶段命令、禁止事项、迁移/新建两种路径、systemd、Nginx、HTTPS、验收和回滚流程。
 
+## GitHub 更新协作规则
+
+本项目已经接入 GitHub 仓库：
+
+```text
+https://github.com/qiufengbrm/wenti
+```
+
+后续代码修改默认以 GitHub 为主通道，不再通过反复打包整个 `wenti` 文件夹来更新服务器。开发机上的 AI 修改本地项目后，应检查变更、提交并推送到 `main`；云服务器上的 AI 或运维人员再在 `/opt/wenti` 中拉取更新、构建并重启服务。
+
+本地开发机常规流程：
+
+```bash
+cd /Users/qmac/Documents/Program/wenti
+git status
+git add .
+git commit -m "说明本次改动"
+git push
+```
+
+服务器常规更新流程：
+
+```bash
+cd /opt/wenti
+git pull
+npm ci
+npx prisma generate
+npx prisma migrate deploy
+npm run build
+sudo systemctl restart wenti
+```
+
+注意：
+
+- `.env`、`.env.local`、`.env.production`、数据库备份、上传附件目录、`node_modules/` 和 `.next/` 不应提交到 Git。
+- 只改前端样式或交互时，服务器一般只需要拉取、构建、重启；如果 `package.json` 或 `package-lock.json` 变化，需要重新 `npm ci`；如果新增 Prisma migration，需要执行 `npx prisma migrate deploy`。
+- 云服务器上的 `.env.production` 和 `FILE_STORAGE_ROOT` 是本地生产配置与业务文件，不跟随 Git 覆盖。
+- 更新失败时，不要在生产环境使用 `prisma migrate dev`、`prisma db push`、`prisma migrate reset` 乱试；按部署文档的回滚原则处理。
+
 ## README 同步维护规则
 
 **每次修改项目内容后，都必须在同一轮修改中同步检查并更新本 README。** 不允许只修改代码、数据库或部署配置而保留过期文档。
@@ -459,7 +498,7 @@ sudo systemctl restart wenti
 cd /opt/wenti
 sudo systemctl stop wenti
 
-# 拉取或上传新代码后
+sudo -u wenti git pull
 sudo -u wenti npm ci
 sudo -u wenti npx prisma generate
 sudo -u wenti npx prisma migrate deploy
@@ -469,7 +508,7 @@ sudo systemctl start wenti
 sudo systemctl status wenti
 ```
 
-如果更新失败，应恢复上一版代码和与其匹配的数据库备份。不要在生产环境执行 `prisma migrate dev` 或手工修改迁移历史。
+如果只改前端样式或交互，`npm ci` 和 `migrate deploy` 通常不会改变任何东西；如果改了依赖或数据库迁移，它们就是必须步骤。`git pull` 提示本地有未提交改动时应先停止并确认，不要在生产环境直接强制覆盖。更新失败时，应恢复上一版代码和与其匹配的数据库备份。不要在生产环境执行 `prisma migrate dev` 或手工修改迁移历史。
 
 ## 资料库存储说明
 

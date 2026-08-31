@@ -4,6 +4,30 @@
 
 项目完整功能、数据模型、存储规则和安全说明见 [README.md](./README.md)。部署执行者必须先读完本文件的“禁止事项”和“部署前决策”。
 
+## GitHub 更新通道
+
+本项目已经接入 GitHub：
+
+```text
+https://github.com/qiufengbrm/wenti
+```
+
+服务器后续更新应优先使用 Git，而不是每次重新接收整个项目文件夹。第一次可以克隆仓库；之后每次版本更新在 `/opt/wenti` 执行 `git pull`，Git 会同步本次变化的文件。`.env.production`、数据库、上传附件和 `FILE_STORAGE_ROOT` 仍保留在服务器本地，不由 Git 管理。
+
+首次用 Git 部署时：
+
+```bash
+sudo -u wenti git clone https://github.com/qiufengbrm/wenti.git /opt/wenti
+cd /opt/wenti
+sudo -u wenti npm ci
+sudo -u wenti npx prisma generate
+sudo -u wenti npx prisma migrate deploy
+sudo -u wenti npm run build
+sudo systemctl restart wenti
+```
+
+已有 `/opt/wenti` 部署切换到 Git 管理时，不要直接覆盖目录。先备份当前代码、数据库和 `FILE_STORAGE_ROOT`，确认 `/opt/wenti` 内没有只存在于服务器而未备份的业务改动，再由部署 AI 制定切换步骤。密码文件、附件目录和生产配置不能被 Git 操作覆盖。
+
 ## 0. 把项目交给云服务器 AI 之前
 
 可以把整个 `wenti` 项目目录交给云服务器上的 AI，但不要将开发机目录原封不动地上传。交付包应是源码包；本地构建产物、依赖、密码和临时文件需要排除。
@@ -566,6 +590,8 @@ rsync -aH /var/lib/wenti-storage/ /安全备份目录/wenti-storage/
 ```bash
 cd /opt/wenti
 sudo systemctl stop wenti
+
+sudo -u wenti git pull
 sudo -u wenti npm ci
 sudo -u wenti npx prisma generate
 sudo -u wenti npx prisma migrate deploy
@@ -573,6 +599,8 @@ sudo -u wenti npm run build
 sudo systemctl start wenti
 sudo systemctl status wenti --no-pager
 ```
+
+如果本次只改了页面样式或交互，`npm ci` 和 `prisma migrate deploy` 通常不会产生实质变化，但保留执行可以减少“忘了跑一步”的事故。若 `git pull` 提示本地有未提交改动，先停止并报告，不要用 `reset --hard` 或强制覆盖。
 
 ### 回滚原则
 
