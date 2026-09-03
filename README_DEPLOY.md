@@ -2,7 +2,7 @@
 
 本文件用于把项目交给另一台服务器上的 AI 或运维人员后快速完成部署。默认目标是 **Ubuntu 22.04/24.04 + MySQL 8 + systemd + Nginx**，应用监听本机 `127.0.0.1:3000`，Nginx 对外提供 HTTP/HTTPS。
 
-项目完整功能、数据模型、存储规则和安全说明见 [README.md](./README.md)。部署执行者必须先读完本文件的“禁止事项”和“部署前决策”。
+项目完整功能、数据模型、存储规则和安全说明见 [README_FULL.md](./README_FULL.md)。部署执行者必须先读完本文件的“禁止事项”和“部署前决策”。
 
 ## GitHub 更新通道
 
@@ -38,6 +38,7 @@ sudo systemctl restart wenti
 
 ```text
 README.md
+README_FULL.md
 README_DEPLOY.md
 package.json
 package-lock.json
@@ -87,7 +88,7 @@ FILE_STORAGE_ROOT/temp/
 ### 可直接发给云服务器 AI 的开场提示词
 
 ```text
-请先完整阅读项目根目录中的 README_DEPLOY.md 和 README.md。先对服务器、源码包、数据库备份和附件存储备份做只读检查并报告结果，不要立即安装、覆盖、迁移或启动。
+请先完整阅读项目根目录中的 README_DEPLOY.md 和 README_FULL.md。先对服务器、源码包、数据库备份和附件存储备份做只读检查并报告结果，不要立即安装、覆盖、迁移或启动。
 
 确认部署模式（全新空环境或迁移现有数据）、内网/公网范围、正式域名、MySQL 来源、FILE_STORAGE_ROOT 路径和首个管理员来源后，再严格按照 README_DEPLOY.md 分阶段执行。
 
@@ -204,6 +205,7 @@ sudo chmod 750 /opt/wenti /var/lib/wenti-storage
 
 ```text
 README.md
+README_FULL.md
 README_DEPLOY.md
 package.json
 package-lock.json
@@ -615,7 +617,7 @@ sudo systemctl status wenti --no-pager
 可以把以下内容连同项目文件交给部署 AI：
 
 ```text
-请先完整阅读 README_DEPLOY.md 和 README.md。目标是在 Ubuntu 服务器上将本项目部署到 /opt/wenti，持久化目录为 /var/lib/wenti-storage，使用 MySQL 8、systemd、Nginx 和 HTTPS。先只做服务器预检并报告结果，不要立即修改系统。确认部署模式（新环境或迁移）、域名、数据库来源、初始管理员来源和公网/内网范围后，再按 README_DEPLOY.md 逐阶段执行。禁止在已有数据环境运行 seed、migrate dev、db push、migrate reset，禁止覆盖已有数据库、存储、Nginx 或 systemd 配置。每一步失败都停止并报告，部署完成后执行文档中的完整业务验收。
+请先完整阅读 README_DEPLOY.md 和 README_FULL.md。目标是在 Ubuntu 服务器上将本项目部署到 /opt/wenti，持久化目录为 /var/lib/wenti-storage，使用 MySQL 8、systemd、Nginx 和 HTTPS。先只做服务器预检并报告结果，不要立即修改系统。确认部署模式（新环境或迁移）、域名、数据库来源、初始管理员来源和公网/内网范围后，再按 README_DEPLOY.md 逐阶段执行。禁止在已有数据环境运行 seed、migrate dev、db push、migrate reset，禁止覆盖已有数据库、存储、Nginx 或 systemd 配置。每一步失败都停止并报告，部署完成后执行文档中的完整业务验收。
 ```
 
 ## 18. 最终交付信息
