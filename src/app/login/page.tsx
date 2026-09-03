@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   return (
     <main className="relative flex min-h-screen items-center justify-center bg-[#f5f5f7] px-5 py-12">
