@@ -416,7 +416,7 @@ export function ResourceDrive({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <div className="grid gap-4">
-      <Card className="relative z-30 overflow-visible p-3 sm:p-4">
+      <Card className="relative z-10 overflow-visible p-3 sm:p-4">
         <div className="grid gap-3 lg:flex lg:items-center lg:justify-between">
           <div className="grid grid-cols-2 gap-2 sm:flex">
             <Button className="w-full sm:w-auto" onClick={() => setUploadOpen(true)}><Upload className="mr-2" size={16} />上传文件</Button><Button className="w-full sm:w-auto" onClick={() => setFolderDialog({ mode: "create" })} variant="secondary"><FolderPlus className="mr-2" size={16} />新建文件夹</Button>
@@ -511,7 +511,7 @@ function ProjectOverview({ dateFrom, dateTo, error, files, isAdmin, loading, onC
   const monthGroups = useMemo(() => groupProjectsByMonth(projects), [projects]);
 
   return <div className="grid gap-5">
-    <Card className="relative z-30 overflow-visible p-4"><div className="grid gap-4"><div className="flex flex-wrap items-center justify-between gap-3"><div>{isAdmin ? <Button onClick={onCreate}><Plus className="mr-2" size={17} />创建活动项目</Button> : <p className="text-sm text-slate-500">选择一个活动项目进入资料空间</p>}</div><p className="text-xs text-[#86868b]">可跨全部项目精确检索文件名和上传日期</p></div><div className="flex items-start gap-2.5 rounded-[11px] border border-[#0071e3]/15 bg-[#0071e3]/[0.055] px-3 py-2.5 text-[12px] leading-5 text-[#315b7d]"><Info className="mt-0.5 shrink-0 text-[#0071e3]" size={15} /><p>服务器最大上传和下载速率约为 1–2 MB/s，大文件传输需要较长时间，请保持页面和网络连接。</p></div><ResourceSearchControls dateFrom={dateFrom} dateTo={dateTo} onDateFrom={onDateFrom} onDateTo={onDateTo} onQuery={onQuery} query={query} scopeLabel="全部项目" /></div></Card>
+    <Card className="relative z-10 overflow-visible p-4"><div className="grid gap-4"><div className="flex flex-wrap items-center justify-between gap-3"><div>{isAdmin ? <Button onClick={onCreate}><Plus className="mr-2" size={17} />创建活动项目</Button> : <p className="text-sm text-slate-500">选择一个活动项目进入资料空间</p>}</div><p className="text-xs text-[#86868b]">可跨全部项目精确检索文件名和上传日期</p></div><div className="flex items-start gap-2.5 rounded-[11px] border border-[#0071e3]/15 bg-[#0071e3]/[0.055] px-3 py-2.5 text-[12px] leading-5 text-[#315b7d]"><Info className="mt-0.5 shrink-0 text-[#0071e3]" size={15} /><p>服务器最大上传和下载速率约为 1–2 MB/s，大文件传输需要较长时间，请保持页面和网络连接。</p></div><ResourceSearchControls dateFrom={dateFrom} dateTo={dateTo} onDateFrom={onDateFrom} onDateTo={onDateTo} onQuery={onQuery} query={query} scopeLabel="全部项目" /></div></Card>
     {error ? <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
     {loading ? <div className="py-20 text-center text-sm text-slate-500">{searchMode ? "正在搜索文件..." : "正在加载活动项目..."}</div> : searchMode ? <GlobalFileSearchResults files={files} /> : projects.length ? <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_8rem] xl:grid-cols-[minmax(0,1fr)_10rem]">
       <div className="grid gap-10">
