@@ -1,0 +1,195 @@
+/** 项目导读：日期范围选择器：在一张日历里圈出起止日期，比拆成两个输入框更直观。 */
+"use client";
+
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { CalendarDays, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+type DateRangePickerProps = {
+  startValue: string;
+  endValue: string;
+  onChange: (startValue: string, endValue: string) => void;
+  ariaLabel?: string;
+  placeholder?: string;
+  className?: string;
+};
+
+const weekDays = ["一", "二", "三", "四", "五", "六", "日"];
+
+export function DateRangePicker({
+  startValue,
+  endValue,
+  onChange,
+  ariaLabel = "选择日期范围",
+  placeholder = "选择日期范围",
+  className
+}: DateRangePickerProps) {
+  const [open, setOpen] = useState(false);
+  const [pendingStart, setPendingStart] = useState<string | null>(null);
+  const [hoveredValue, setHoveredValue] = useState<string | null>(null);
+  const [visibleMonth, setVisibleMonth] = useState(() => startOfMonth(parseDate(startValue) ?? new Date()));
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dialogId = useId();
+  const days = useMemo(() => calendarDays(visibleMonth), [visibleMonth]);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+        setHoveredValue(null);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setHoveredValue(null);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  function toggleCalendar() {
+    if (!open) {
+      setVisibleMonth(startOfMonth(parseDate(startValue) ?? new Date()));
+      setPendingStart(startValue && !endValue ? startValue : null);
+      setHoveredValue(null);
+    }
+    setOpen((current) => !current);
+  }
+
+  function chooseDate(date: Date) {
+    const nextValue = toDateValue(date);
+    if (!pendingStart) {
+      setPendingStart(nextValue);
+      setHoveredValue(null);
+      return;
+    }
+
+    const [nextStart, nextEnd] = sortRange(pendingStart, nextValue);
+    onChange(nextStart, nextEnd);
+    setPendingStart(null);
+    setHoveredValue(null);
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  const previewRange = pendingStart
+    ? hoveredValue ? sortRange(pendingStart, hoveredValue) : [pendingStart, ""]
+    : [startValue, endValue];
+  const [previewStart, previewEnd] = previewRange;
+  const displayValue = startValue
+    ? endValue
+      ? `${formatDateLabel(startValue)} 至 ${formatDateLabel(endValue)}`
+      : `${formatDateLabel(startValue)} 起`
+    : "";
+
+  return (
+    <div className={cn("relative", className)} ref={wrapperRef}>
+      <button
+        aria-controls={dialogId}
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-label={ariaLabel}
+        className={cn(
+          "flex h-11 w-full items-center justify-between gap-3 rounded-[10px] border border-black/[0.16] bg-white/90 px-3 text-left text-sm shadow-[inset_0_0_0_.5px_rgba(255,255,255,.6),0_1px_2px_rgba(0,0,0,.025)] transition-[border-color,box-shadow,background-color] duration-150",
+          "hover:border-black/25 focus-visible:border-[#0071e3] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0071e3]/15",
+          open && "border-[#0071e3] ring-4 ring-[#0071e3]/15"
+        )}
+        onClick={toggleCalendar}
+        ref={triggerRef}
+        type="button"
+      >
+        <span className={displayValue ? "truncate font-medium text-[#1d1d1f]" : "text-[#98989d]"}>{displayValue || placeholder}</span>
+        <CalendarDays className={open ? "shrink-0 text-[#0071e3]" : "shrink-0 text-[#86868b]"} size={18} />
+      </button>
+
+      {open ? (
+        <div
+          aria-label={`${ariaLabel}日历`}
+          className="date-picker-popover absolute left-0 top-[calc(100%+8px)] z-[80] w-[min(19rem,calc(100vw-2rem))] origin-top-left rounded-[16px] border border-white/80 bg-white/95 p-3 shadow-[0_18px_50px_rgba(0,0,0,.18),0_2px_8px_rgba(0,0,0,.08)] backdrop-blur-2xl"
+          id={dialogId}
+          role="dialog"
+        >
+          <div className="flex items-center justify-between px-1 pb-2">
+            <button aria-label="上个月" className={calendarControlClass} onClick={() => setVisibleMonth((current) => addMonths(current, -1))} type="button"><ChevronLeft size={17} /></button>
+            <p aria-live="polite" className="text-sm font-semibold tracking-[-0.01em] text-[#1d1d1f]">{visibleMonth.getFullYear()} 年 {visibleMonth.getMonth() + 1} 月</p>
+            <button aria-label="下个月" className={calendarControlClass} onClick={() => setVisibleMonth((current) => addMonths(current, 1))} type="button"><ChevronRight size={17} /></button>
+          </div>
+          <p className="pb-2 text-center text-[11px] font-medium text-[#0066cc]">{pendingStart ? "请选择结束日期" : "请选择开始日期"}</p>
+          <div className="grid grid-cols-7 gap-1">
+            {weekDays.map((day) => <div aria-hidden="true" className="flex h-7 items-center justify-center text-[11px] font-medium text-[#86868b]" key={day}>{day}</div>)}
+            {days.map((date, index) => {
+              if (!date) return <span aria-hidden="true" className="size-9" key={`empty-${index}`} />;
+              const dateValue = toDateValue(date);
+              const endpoint = dateValue === previewStart || Boolean(previewEnd && dateValue === previewEnd);
+              const inRange = Boolean(previewStart && previewEnd && dateValue >= previewStart && dateValue <= previewEnd);
+              return (
+                <button
+                  aria-label={formatDateLabel(dateValue)}
+                  className={cn(
+                    "flex size-9 items-center justify-center rounded-full text-[13px] font-medium transition-[background-color,color,transform] duration-100",
+                    endpoint ? "bg-[#0071e3] text-white shadow-[0_3px_10px_rgba(0,113,227,.28)]" : inRange ? "bg-[#0071e3]/12 text-[#0066cc]" : "text-[#3a3a3c] hover:bg-black/[0.06]"
+                  )}
+                  key={dateValue}
+                  onClick={() => chooseDate(date)}
+                  onMouseEnter={() => pendingStart && setHoveredValue(dateValue)}
+                  type="button"
+                >
+                  {date.getDate()}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex items-center justify-between border-t border-black/[0.07] px-1 pt-3">
+            {startValue || pendingStart ? <button className="inline-flex h-8 items-center gap-1 rounded-[8px] px-2 text-xs font-medium text-[#6e6e73] hover:bg-black/[0.055]" onClick={() => { onChange("", ""); setPendingStart(null); setHoveredValue(null); setOpen(false); }} type="button"><X size={13} />清除范围</button> : <span />}
+            <span className="text-[11px] text-[#86868b]">起止日期均包含</span>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+const calendarControlClass = "flex size-9 items-center justify-center rounded-full text-[#515154] transition-colors hover:bg-black/[0.06] hover:text-[#1d1d1f] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0071e3]/15";
+
+function parseDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day ? date : null;
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function addMonths(date: Date, amount: number) {
+  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
+}
+
+function calendarDays(month: Date) {
+  const leadingEmptyDays = (month.getDay() + 6) % 7;
+  const count = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  return [...Array.from({ length: leadingEmptyDays }, () => null), ...Array.from({ length: count }, (_, index) => new Date(month.getFullYear(), month.getMonth(), index + 1))];
+}
+
+function toDateValue(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function formatDateLabel(value: string) {
+  const date = parseDate(value);
+  return date ? `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}` : value;
+}
+
+function sortRange(first: string, second: string): [string, string] {
+  return first <= second ? [first, second] : [second, first];
+}

@@ -5,7 +5,6 @@ export default function SuperAdminLoginPage() {
   return (
     <MockLoginForm
       allowedRoles={["super_admin"]}
-      description="超级管理员专用入口。"
       title="超级管理员登录"
     />
   );

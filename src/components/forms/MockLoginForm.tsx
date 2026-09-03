@@ -12,13 +12,11 @@ import { roleLabels, type Role } from "@/types/role";
 
 export function MockLoginForm({
   title,
-  description,
   allowedRoles,
   alternateHref,
   alternateLabel
 }: {
   title: string;
-  description: string;
   allowedRoles: Role[];
   alternateHref?: string;
   alternateLabel?: string;
@@ -64,7 +62,6 @@ export function MockLoginForm({
           <span className="mx-auto grid size-12 place-items-center rounded-[13px] bg-[#0071e3] text-xl font-semibold text-white shadow-sm">文</span>
           <p className="mt-4 text-[13px] font-semibold text-[#0066cc]">文艺体育中心</p>
           <h1 className="mt-2 text-[1.75rem] font-semibold tracking-[-0.035em] text-[#1d1d1f]">{title}</h1>
-          <p className="mt-2 text-[13px] leading-6 text-[#6e6e73]">{description}</p>
         </div>
       <Card className="w-full p-6 sm:p-8">
         <form className="grid gap-5" onSubmit={handleSubmit}>

@@ -7,7 +7,6 @@ export default function VolunteerLoginPage() {
       allowedRoles={["volunteer"]}
       alternateHref="/admin/login"
       alternateLabel="前往管理员登录"
-      description="志愿者使用独立入口登录。"
       title="志愿者登录"
     />
   );

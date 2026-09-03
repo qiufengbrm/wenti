@@ -21,6 +21,12 @@ export default async function VolunteerTutorialsPage() {
         ]}
         data={tutorials}
         emptyText="暂无已发布教程"
+        mobileRender={(tutorial) => (
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-sm font-semibold text-[#1d1d1f]">{tutorial.title}</p>
+            <Button className="h-9 shrink-0 px-3" href={`/volunteer/tutorials/${tutorial.id}`} variant="secondary">查看</Button>
+          </div>
+        )}
       />
     </>
   );

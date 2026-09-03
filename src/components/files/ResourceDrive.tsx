@@ -1,8 +1,6 @@
 /** 项目导读：资料中心交互组件：目录、上传、移动和预览在此汇合，文件多但规矩不能像网盘会员一样忽隐忽现。 */
 "use client";
 
-/* eslint-disable @next/next/no-img-element -- authenticated previews cannot use the public Next image optimizer */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -32,6 +30,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
 
 type Visibility = "ALL" | "ADMINS" | "VOLUNTEERS";
 type PreviewStatus = "NONE" | "PENDING" | "READY" | "FAILED";
@@ -417,7 +416,7 @@ export function ResourceDrive({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <div className="grid gap-4">
-      <Card className="p-3 sm:p-4">
+      <Card className="relative z-30 overflow-visible p-3 sm:p-4">
         <div className="grid gap-3 lg:flex lg:items-center lg:justify-between">
           <div className="grid grid-cols-2 gap-2 sm:flex">
             <Button className="w-full sm:w-auto" onClick={() => setUploadOpen(true)}><Upload className="mr-2" size={16} />上传文件</Button><Button className="w-full sm:w-auto" onClick={() => setFolderDialog({ mode: "create" })} variant="secondary"><FolderPlus className="mr-2" size={16} />新建文件夹</Button>
@@ -512,7 +511,7 @@ function ProjectOverview({ dateFrom, dateTo, error, files, isAdmin, loading, onC
   const monthGroups = useMemo(() => groupProjectsByMonth(projects), [projects]);
 
   return <div className="grid gap-5">
-    <Card className="p-4"><div className="grid gap-4"><div className="flex flex-wrap items-center justify-between gap-3"><div>{isAdmin ? <Button onClick={onCreate}><Plus className="mr-2" size={17} />创建活动项目</Button> : <p className="text-sm text-slate-500">选择一个活动项目进入资料空间</p>}</div><p className="text-xs text-[#86868b]">可跨全部项目精确检索文件名和上传日期</p></div><div className="flex items-start gap-2.5 rounded-[11px] border border-[#0071e3]/15 bg-[#0071e3]/[0.055] px-3 py-2.5 text-[12px] leading-5 text-[#315b7d]"><Info className="mt-0.5 shrink-0 text-[#0071e3]" size={15} /><p>服务器最大上传和下载速率约为 1–2 MB/s，大文件传输需要较长时间，请保持页面和网络连接。</p></div><ResourceSearchControls dateFrom={dateFrom} dateTo={dateTo} onDateFrom={onDateFrom} onDateTo={onDateTo} onQuery={onQuery} query={query} scopeLabel="全部项目" /></div></Card>
+    <Card className="relative z-30 overflow-visible p-4"><div className="grid gap-4"><div className="flex flex-wrap items-center justify-between gap-3"><div>{isAdmin ? <Button onClick={onCreate}><Plus className="mr-2" size={17} />创建活动项目</Button> : <p className="text-sm text-slate-500">选择一个活动项目进入资料空间</p>}</div><p className="text-xs text-[#86868b]">可跨全部项目精确检索文件名和上传日期</p></div><div className="flex items-start gap-2.5 rounded-[11px] border border-[#0071e3]/15 bg-[#0071e3]/[0.055] px-3 py-2.5 text-[12px] leading-5 text-[#315b7d]"><Info className="mt-0.5 shrink-0 text-[#0071e3]" size={15} /><p>服务器最大上传和下载速率约为 1–2 MB/s，大文件传输需要较长时间，请保持页面和网络连接。</p></div><ResourceSearchControls dateFrom={dateFrom} dateTo={dateTo} onDateFrom={onDateFrom} onDateTo={onDateTo} onQuery={onQuery} query={query} scopeLabel="全部项目" /></div></Card>
     {error ? <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
     {loading ? <div className="py-20 text-center text-sm text-slate-500">{searchMode ? "正在搜索文件..." : "正在加载活动项目..."}</div> : searchMode ? <GlobalFileSearchResults files={files} /> : projects.length ? <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_8rem] xl:grid-cols-[minmax(0,1fr)_10rem]">
       <div className="grid gap-10">
@@ -535,13 +534,12 @@ function ProjectOverview({ dateFrom, dateTo, error, files, isAdmin, loading, onC
 function ResourceSearchControls({ compact = false, dateFrom, dateTo, onDateFrom, onDateTo, onQuery, query, scopeLabel }: { compact?: boolean; dateFrom: string; dateTo: string; onDateFrom: (value: string) => void; onDateTo: (value: string) => void; onQuery: (value: string) => void; query: string; scopeLabel: string }) {
   const active = Boolean(query || dateFrom || dateTo);
   return (
-    <div className={`grid min-w-0 w-full gap-2.5 sm:gap-3 ${compact ? "sm:grid-cols-2 lg:max-w-4xl lg:grid-cols-[minmax(15rem,1fr)_13rem_13rem_auto]" : "md:grid-cols-2 xl:grid-cols-[minmax(18rem,1fr)_14rem_14rem_auto]"}`}>
+    <div className={`grid min-w-0 w-full gap-2.5 sm:gap-3 ${compact ? "sm:grid-cols-2 lg:max-w-3xl lg:grid-cols-[minmax(15rem,1fr)_17rem_auto]" : "md:grid-cols-2 xl:grid-cols-[minmax(18rem,1fr)_18rem_auto]"}`}>
       <label className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
         <input aria-label={`按文件名搜索${scopeLabel}`} className="h-11 w-full rounded-[10px] border border-black/[0.13] bg-white pl-9 pr-3 text-sm outline-none transition focus:border-[#0071e3] focus:ring-4 focus:ring-[#0071e3]/10" onChange={(event) => onQuery(event.target.value)} placeholder={`搜索${scopeLabel}中的文件名`} value={query} />
       </label>
-      <DatePicker ariaLabel="选择上传开始日期" max={dateTo || undefined} onChange={onDateFrom} placeholder="上传开始日期" value={dateFrom} />
-      <DatePicker ariaLabel="选择上传结束日期" min={dateFrom || undefined} onChange={onDateTo} placeholder="上传结束日期" value={dateTo} />
+      <DateRangePicker ariaLabel="选择上传日期范围" endValue={dateTo} onChange={(start, end) => { onDateFrom(start); onDateTo(end); }} placeholder="选择上传日期范围" startValue={dateFrom} />
       <Button className="h-11 w-full" disabled={!active} onClick={() => { onQuery(""); onDateFrom(""); onDateTo(""); }} variant="secondary">清除筛选</Button>
     </div>
   );

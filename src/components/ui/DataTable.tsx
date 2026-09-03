@@ -10,25 +10,27 @@ export interface Column<T> {
 export function DataTable<T extends object>({
   columns,
   data,
-  emptyText = "暂无数据"
+  emptyText = "暂无数据",
+  mobileRender
 }: {
   columns: Array<Column<T>>;
   data: T[];
   emptyText?: string;
+  mobileRender?: (row: T) => React.ReactNode;
 }) {
   return (
     <>
       <div className="grid gap-3 md:hidden">
         {data.length > 0 ? data.map((row, index) => (
           <article className="overflow-hidden rounded-[14px] border border-black/[0.08] bg-white/90 shadow-soft" key={String((row as { id?: string }).id ?? index)}>
-            <dl className="divide-y divide-black/[0.06]">
+            {mobileRender ? <div className="px-4 py-3">{mobileRender(row)}</div> : <dl className="divide-y divide-black/[0.06]">
               {columns.map((column, columnIndex) => (
                 <div className={`grid grid-cols-[5.5rem_minmax(0,1fr)] items-start gap-3 px-4 py-3 ${columnIndex === 0 ? "bg-black/[0.018]" : ""}`} key={String(column.key)}>
                   <dt className="text-xs font-medium leading-5 text-[#86868b]">{column.header}</dt>
                   <dd className="min-w-0 break-words text-right text-sm font-medium leading-5 text-[#3a3a3c]">{column.render ? column.render(row) : renderCell((row as Record<string, unknown>)[String(column.key)])}</dd>
                 </div>
               ))}
-            </dl>
+            </dl>}
           </article>
         )) : <div className="rounded-[14px] border border-black/[0.08] bg-white/70 px-4 py-10 text-center text-sm text-slate-500">{emptyText}</div>}
       </div>
