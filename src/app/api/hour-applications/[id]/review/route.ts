@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireApiAdmin } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
-import { removeStoredKeys } from "@/lib/resource-storage";
+import { removeHourProofStorageKeys } from "@/lib/hour-proof-storage";
 import { getHourProofArtifactKeys } from "@/lib/hour-proof-preview";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
   ]);
 
-  if (!approved) await removeStoredKeys([application.proofFileUrl, ...getHourProofArtifactKeys("direct", application.id)]);
+  if (!approved) await removeHourProofStorageKeys([application.proofFileUrl, ...getHourProofArtifactKeys("direct", application.id, application.proofFileUrl)]);
 
   return NextResponse.json({ message: approved ? "已通过申请并计入志愿时长" : "已驳回申请、删除证明附件并通知志愿者" });
 }

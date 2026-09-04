@@ -5,13 +5,21 @@ import {
   createOfficePreview,
   createVideoPreview,
   getPreviewKind,
-  getStoredFile,
-  getStoredUpload,
   moveStoredFile,
   removeStoredKeys,
-  storeUploadedFile,
-  storedFileExists
+  resolveStorageKey
 } from "@/lib/resource-storage";
+import {
+  createHourProofOriginalObjectKey,
+  getHourProofArtifactStorageKeys,
+  getHourProofFile,
+  getHourProofUploadForPreview,
+  hourProofFileExists,
+  isHourProofObjectStorageEnabled,
+  putHourProofObjectFromPath,
+  removeHourProofStorageKeys,
+  storeHourProofUploadedFile
+} from "@/lib/hour-proof-storage";
 
 export type HourProofSource = "direct" | "task";
 
@@ -32,18 +40,26 @@ export type HourProofArtifacts = {
 
 export async function storeHourProofFile(file: File, source: HourProofSource, userId: string, recordId: string, fileName: string) {
   const directory = source === "direct" ? "hour-proofs" : "task-proofs";
-  const originalKey = path.posix.join(directory, userId, recordId, fileName);
-  const stored = await storeUploadedFile(file, originalKey);
+  const useOss = isHourProofObjectStorageEnabled();
+  const originalKey = useOss ? createHourProofOriginalObjectKey(source, userId, recordId, fileName) : path.posix.join(directory, userId, recordId, fileName);
+  const temporaryKey = useOss ? path.posix.join("temp", `${directory}-${recordId}${path.extname(fileName).toLowerCase()}`) : originalKey;
+  const stored = await storeHourProofUploadedFile(file, temporaryKey);
   const kind = getPreviewKind(fileName, file.type);
+  const temporaryKeys = useOss ? [temporaryKey] : [];
 
   if (kind === "image") {
     try {
       // 图片证明只留压缩后的 JPG，既省空间，也免得手机原图大到能当壁纸印刷。
       const generated = await createImagePreview(stored);
-      const imageKey = getHourProofArtifactKeys(source, recordId)[0];
-      await moveStoredFile(generated.previewKey, imageKey);
-      await removeStoredKeys([originalKey]);
-      const compressed = await getStoredFile(imageKey);
+      const imageKey = getHourProofArtifactKeys(source, recordId, originalKey)[0];
+      if (useOss) {
+        await putHourProofObjectFromPath(imageKey, resolveStorageKey(generated.previewKey), "image/jpeg");
+        await removeStoredKeys([generated.previewKey, ...temporaryKeys]);
+      } else {
+        await moveStoredFile(generated.previewKey, imageKey);
+        await removeStoredKeys([originalKey]);
+      }
+      const compressed = await getHourProofFile(imageKey);
       return {
         proofFileUrl: imageKey,
         proofFileName: `${path.parse(fileName).name}.jpg`,
@@ -52,8 +68,19 @@ export async function storeHourProofFile(file: File, source: HourProofSource, us
         previewFailed: false
       };
     } catch (error) {
-      await removeStoredKeys([originalKey, ...getHourProofArtifactKeys(source, recordId)]);
+      await Promise.all([
+        removeStoredKeys(temporaryKeys),
+        removeHourProofStorageKeys([originalKey, ...getHourProofArtifactKeys(source, recordId, originalKey)])
+      ]);
       throw new Error(`图片压缩失败：${error instanceof Error ? error.message : "未知错误"}`);
+    }
+  }
+
+  if (useOss) {
+    try {
+      await putHourProofObjectFromPath(originalKey, stored.absolutePath, file.type || "application/octet-stream");
+    } finally {
+      await removeStoredKeys(temporaryKeys);
     }
   }
 
@@ -69,14 +96,8 @@ export async function storeHourProofFile(file: File, source: HourProofSource, us
   return { ...proof, proofFileSize: file.size, previewFailed };
 }
 
-export function getHourProofArtifactKeys(source: HourProofSource, id: string) {
-  const base = path.posix.join("proof-previews", source, id);
-  return [
-    path.posix.join(base, "preview.jpg"),
-    path.posix.join(base, "preview.mp4"),
-    path.posix.join(base, "preview.pdf"),
-    path.posix.join(base, "poster.jpg")
-  ];
+export function getHourProofArtifactKeys(source: HourProofSource, id: string, ownerStorageKey?: string | null) {
+  return getHourProofArtifactStorageKeys(source, id, ownerStorageKey);
 }
 
 export async function ensureHourProofPreview(source: HourProofSource, proof: ProofFile, options: { requirePoster?: boolean } = {}) {
@@ -84,14 +105,14 @@ export async function ensureHourProofPreview(source: HourProofSource, proof: Pro
   const kind = getPreviewKind(proof.proofFileName, proof.proofFileType);
   if (kind === "none") throw new Error("该格式不支持网页预览");
   if (kind === "pdf") {
-    if (!(await storedFileExists(proof.proofFileUrl))) throw new Error("磁盘中的证明材料不存在");
+    if (!(await hourProofFileExists(proof.proofFileUrl))) throw new Error("存储中的证明材料不存在");
     return { kind, previewKey: proof.proofFileUrl };
   }
 
-  const [imageKey, videoKey, officeKey, posterKey] = getHourProofArtifactKeys(source, proof.id);
+  const [imageKey, videoKey, officeKey, posterKey] = getHourProofArtifactKeys(source, proof.id, proof.proofFileUrl);
   const previewKey = kind === "image" ? imageKey : kind === "video" ? videoKey : officeKey;
-  const ready = await storedFileExists(previewKey);
-  const posterReady = kind !== "video" || !options.requirePoster || await storedFileExists(posterKey);
+  const ready = await hourProofFileExists(previewKey);
+  const posterReady = kind !== "video" || !options.requirePoster || await hourProofFileExists(posterKey);
   if (ready && posterReady) return { kind, previewKey, posterKey: kind === "video" ? posterKey : undefined };
 
   const jobKey = `${source}:${proof.id}`;
@@ -113,20 +134,33 @@ export async function generateHourProofPreview(source: HourProofSource, proof: P
   if (kind === "none") throw new Error("该格式不支持网页预览");
   if (kind === "pdf") return { kind, previewKey: proof.proofFileUrl };
 
-  const upload = await getStoredUpload(proof.proofFileUrl);
-  const [imageKey, videoKey, officeKey, posterKey] = getHourProofArtifactKeys(source, proof.id);
-  if (kind === "office") {
-    const generated = await createOfficePreview(upload);
-    await moveStoredFile(generated, officeKey);
-    return { kind, previewKey: officeKey };
+  const { upload, cleanupKeys } = await getHourProofUploadForPreview(proof.proofFileUrl, proof.proofFileName);
+  const [imageKey, videoKey, officeKey, posterKey] = getHourProofArtifactKeys(source, proof.id, proof.proofFileUrl);
+  try {
+    if (kind === "office") {
+      const generated = await createOfficePreview(upload);
+      await moveGeneratedProofArtifact(generated, officeKey, "application/pdf", Boolean(cleanupKeys.length));
+      return { kind, previewKey: officeKey };
+    }
+    if (kind === "image") {
+      const generated = await createImagePreview(upload);
+      await moveGeneratedProofArtifact(generated.previewKey, imageKey, "image/jpeg", Boolean(cleanupKeys.length));
+      return { kind, previewKey: imageKey };
+    }
+    const generated = await createVideoPreview(upload);
+    await moveGeneratedProofArtifact(generated.previewKey, videoKey, "video/mp4", Boolean(cleanupKeys.length));
+    if (generated.posterKey) await moveGeneratedProofArtifact(generated.posterKey, posterKey, "image/jpeg", Boolean(cleanupKeys.length));
+    return { kind, previewKey: videoKey, posterKey };
+  } finally {
+    await removeStoredKeys(cleanupKeys);
   }
-  if (kind === "image") {
-    const generated = await createImagePreview(upload);
-    await moveStoredFile(generated.previewKey, imageKey);
-    return { kind, previewKey: imageKey };
+}
+
+async function moveGeneratedProofArtifact(sourceKey: string, destinationKey: string, contentType: string, destinationIsOss: boolean) {
+  if (destinationIsOss) {
+    await putHourProofObjectFromPath(destinationKey, resolveStorageKey(sourceKey), contentType);
+    await removeStoredKeys([sourceKey]);
+    return;
   }
-  const generated = await createVideoPreview(upload);
-  await moveStoredFile(generated.previewKey, videoKey);
-  if (generated.posterKey) await moveStoredFile(generated.posterKey, posterKey);
-  return { kind, previewKey: videoKey, posterKey };
+  await moveStoredFile(sourceKey, destinationKey);
 }

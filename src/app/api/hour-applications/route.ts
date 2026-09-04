@@ -4,7 +4,7 @@ import { requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { isVolunteer } from "@/lib/permissions";
 import { validateResourceName } from "@/lib/resource-drive";
-import { removeStoredKeys } from "@/lib/resource-storage";
+import { removeHourProofStorageKeys } from "@/lib/hour-proof-storage";
 import { getHourProofArtifactKeys, storeHourProofFile } from "@/lib/hour-proof-preview";
 
 export const runtime = "nodejs";
@@ -23,17 +23,12 @@ export async function POST(request: NextRequest) {
   const notes = readText(form, "notes");
   const hours = Number(readText(form, "hours"));
   const serviceDate = readText(form, "serviceDate") || readText(form, "serviceStartDate");
-  const serviceStartClockTime = normalizeClock(readText(form, "serviceStartClockTime"));
-  const serviceEndClockTime = normalizeClock(readText(form, "serviceEndClockTime"));
-  const serviceStartAt = parseDateAndTime(serviceDate, serviceStartClockTime, "00:00");
-  const serviceEndAt = parseDateAndTime(serviceDate, serviceEndClockTime, "23:59");
+  const serviceStartAt = parseServiceDate(serviceDate);
+  const serviceEndAt = serviceStartAt;
   const proof = form.get("proof");
 
   if (!workContent || workContent.length > 2000) return NextResponse.json({ message: "请填写 2000 字以内的志愿服务内容" }, { status: 400 });
   if (!serviceStartAt || !serviceEndAt) return NextResponse.json({ message: "请选择有效的服务日期" }, { status: 400 });
-  if (serviceEndAt < serviceStartAt) return NextResponse.json({ message: "结束时间不能早于开始时间" }, { status: 400 });
-  if (readText(form, "serviceStartClockTime") && !serviceStartClockTime) return NextResponse.json({ message: "开始时间格式无效" }, { status: 400 });
-  if (readText(form, "serviceEndClockTime") && !serviceEndClockTime) return NextResponse.json({ message: "结束时间格式无效" }, { status: 400 });
   if (!hours || hours <= 0 || hours * 2 !== Math.floor(hours * 2)) return NextResponse.json({ message: "志愿时长必须大于 0，且为 0.5 小时的倍数" }, { status: 400 });
   if (notes.length > 2000) return NextResponse.json({ message: "备注不能超过 2000 字" }, { status: 400 });
   if (proof instanceof File && proof.size > MAX_PROOF_SIZE) return NextResponse.json({ message: "辅助证明材料不能超过 20MB" }, { status: 413 });
@@ -48,8 +43,8 @@ export async function POST(request: NextRequest) {
       workContent,
       serviceStartAt,
       serviceEndAt,
-      serviceStartClockTime,
-      serviceEndClockTime,
+      serviceStartClockTime: null,
+      serviceEndClockTime: null,
       hours,
       notes: notes || null,
       status: "PENDING"
@@ -84,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     await prisma.volunteerHour.delete({ where: { id: application.id } }).catch(() => undefined);
-    await removeStoredKeys([proofKey, ...getHourProofArtifactKeys("direct", application.id)]);
+    await removeHourProofStorageKeys([proofKey, ...getHourProofArtifactKeys("direct", application.id, proofKey)]);
     return NextResponse.json({ message: error instanceof Error ? error.message : "申请提交失败" }, { status: 500 });
   }
 
@@ -96,12 +91,8 @@ function readText(form: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function parseDateAndTime(dateValue: string, clockValue: string | null, fallbackClock: string) {
+function parseServiceDate(dateValue: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return null;
-  const date = new Date(`${dateValue}T${clockValue ?? fallbackClock}:00`);
+  const date = new Date(`${dateValue}T00:00:00`);
   return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function normalizeClock(value: string) {
-  return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value) ? value : null;
 }

@@ -287,7 +287,7 @@ TEMP_FILE_RETENTION_HOURS="24"
 ORPHAN_PREVIEW_RETENTION_DAYS="7"
 TUTORIAL_INLINE_IMAGE_RETENTION_HOURS="24"
 
-# 可选：仅将资料中心的原文件和预览产物存入私有 OSS。
+# 可选：将资料中心文件和志愿时长证明材料存入私有 OSS。
 OSS_BUCKET="wenti-resource"
 OSS_REGION="oss-cn-chengdu"
 OSS_ENDPOINT="https://oss-cn-chengdu-internal.aliyuncs.com"
@@ -298,9 +298,9 @@ OSS_ACCESS_KEY_ID="RAM_USER_ACCESS_KEY_ID"
 OSS_ACCESS_KEY_SECRET="RAM_USER_ACCESS_KEY_SECRET"
 ```
 
-OSS 配置必须成套提供；未配置时资料中心继续使用本地存储。`OSS_ENDPOINT` 供同地域服务器上传和预览读取，`OSS_PUBLIC_ENDPOINT` 仅用于给已通过网站权限检查的用户签发 5 分钟下载地址。AccessKey 必须属于最小权限 RAM 程序用户，不得使用主账号密钥。
+OSS 配置必须成套提供；未配置时资料中心文件和志愿时长证明材料继续使用本地存储。`OSS_ENDPOINT` 供同地域服务器上传和预览读取，`OSS_PUBLIC_ENDPOINT` 仅用于给已通过网站权限检查的用户签发 5 分钟下载地址。AccessKey 必须属于最小权限 RAM 程序用户，不得使用主账号密钥。
 
-升级已有站点时，新上传资料会直接进入 OSS，历史本地资料仍可访问。要迁移历史资料，必须先同时备份 MySQL 和 `FILE_STORAGE_ROOT`，再按顺序执行：
+升级已有站点时，新上传资料和证明材料会直接进入 OSS，历史本地资料和证明材料仍可访问。要迁移历史资料，必须先同时备份 MySQL 和 `FILE_STORAGE_ROOT`，再按顺序执行：
 
 ```bash
 cd /opt/wenti

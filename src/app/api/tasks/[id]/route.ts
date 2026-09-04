@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireApiAdmin, requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
-import { removeStoredKeys } from "@/lib/resource-storage";
+import { removeHourProofStorageKeys } from "@/lib/hour-proof-storage";
 import { getHourProofArtifactKeys } from "@/lib/hour-proof-preview";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -83,7 +83,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     });
   });
 
-  await removeStoredKeys(task.submissions.flatMap((submission) => [submission.proofFileUrl, ...getHourProofArtifactKeys("task", submission.id)]));
+  await removeHourProofStorageKeys(task.submissions.flatMap((submission) => [submission.proofFileUrl, ...getHourProofArtifactKeys("task", submission.id, submission.proofFileUrl)]));
 
   return NextResponse.json({
     message: "任务已永久删除",

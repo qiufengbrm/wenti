@@ -4,7 +4,7 @@ import { requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { ensureHourProofPreview, type HourProofSource } from "@/lib/hour-proof-preview";
 import { canAccessAdmin } from "@/lib/permissions";
-import { getStoredFile } from "@/lib/resource-storage";
+import { getHourProofFile } from "@/lib/hour-proof-storage";
 
 export const runtime = "nodejs";
 
@@ -18,10 +18,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { kind, previewKey } = await ensureHourProofPreview(source, proof);
-    const metadata = await getStoredFile(previewKey);
+    const metadata = await getHourProofFile(previewKey);
     const range = kind === "video" ? parseRange(request.headers.get("range"), metadata.size) : null;
     if (range === "invalid") return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${metadata.size}` } });
-    const stored = range ? await getStoredFile(previewKey, range) : metadata;
+    const stored = range ? await getHourProofFile(previewKey, range) : metadata;
     const contentType = kind === "image" ? "image/jpeg" : kind === "video" ? "video/mp4" : "application/pdf";
     return new Response(stored.stream as never, {
       status: range ? 206 : 200,

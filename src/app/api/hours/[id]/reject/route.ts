@@ -2,7 +2,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireApiAdmin } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
-import { removeStoredKeys } from "@/lib/resource-storage";
+import { removeHourProofStorageKeys } from "@/lib/hour-proof-storage";
 import { getHourProofArtifactKeys } from "@/lib/hour-proof-preview";
 
 type RecordType = "direct" | "taskSubmission" | "taskHour";
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     // 数据提交成功后再清磁盘；数据库是总账，附件是仓库，顺序不能反客为主。
-    await removeStoredKeys([submission.proofFileUrl, ...getHourProofArtifactKeys("task", submission.id)]);
+    await removeHourProofStorageKeys([submission.proofFileUrl, ...getHourProofArtifactKeys("task", submission.id, submission.proofFileUrl)]);
     return NextResponse.json({ message: "已驳回该志愿时长、扣除累计时长并删除证明附件" });
   }
 
@@ -146,6 +146,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     throw error;
   }
 
-  await removeStoredKeys([hour.proofFileUrl, ...getHourProofArtifactKeys("direct", hour.id)]);
+  await removeHourProofStorageKeys([hour.proofFileUrl, ...getHourProofArtifactKeys("direct", hour.id, hour.proofFileUrl)]);
   return NextResponse.json({ message: "已驳回该志愿时长、扣除累计时长并删除证明附件" });
 }

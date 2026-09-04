@@ -73,7 +73,7 @@ sudo systemctl restart wenti
 ### 志愿者端
 
 - 从独立入口登录，在首页进入个人待办、志愿时长和教程等对应页面。
-- 通过侧栏独立的“申请志愿时长”填写服务内容、日期、可选开始/结束时间、申报时长、备注和辅助证明；不再使用结束日期字段。
+- 通过侧栏独立的“申请志愿时长”填写服务内容、日期、申报时长、备注和辅助证明；服务时间只精确到日期。
 - 证明材料支持点击或拖拽上传，单个最大 20 MB。上传图片会转为最长边不超过 1920×1080 的 JPG；PDF、Office 和视频按支持情况生成网页预览。
 - 申报通过后计入累计时长；驳回后不计入，并删除对应证明原文件和预览文件。
 - 在“我的志愿时长”查看累计、待审核、已通过、已驳回记录及每条申报详情。
@@ -245,7 +245,7 @@ TEMP_FILE_RETENTION_HOURS="24"
 ORPHAN_PREVIEW_RETENTION_DAYS="7"
 TUTORIAL_INLINE_IMAGE_RETENTION_HOURS="24"
 
-# 资料中心 OSS（全部填写时启用）
+# 资料中心与证明材料 OSS（全部填写时启用）
 OSS_BUCKET="wenti-resource"
 OSS_REGION="oss-cn-chengdu"
 OSS_ENDPOINT="https://oss-cn-chengdu-internal.aliyuncs.com"
@@ -267,11 +267,11 @@ OSS_ACCESS_KEY_SECRET="RAM_USER_ACCESS_KEY_SECRET"
 | `TEMP_FILE_RETENTION_HOURS` | 否 | `temp/` 临时内容保留小时数，默认 24 |
 | `ORPHAN_PREVIEW_RETENTION_DAYS` | 否 | 数据库未引用的预览文件保留天数，默认 7 |
 | `TUTORIAL_INLINE_IMAGE_RETENTION_HOURS` | 否 | 已上传但未随教程保存的正文图片保留小时数，默认 24 |
-| `OSS_BUCKET` | 否 | 资料中心使用的私有 Bucket；与其他 OSS 变量成套配置 |
+| `OSS_BUCKET` | 否 | 资料中心和证明材料使用的私有 Bucket；与其他 OSS 变量成套配置 |
 | `OSS_REGION` | 否 | OSS V4 签名地域，例如 `oss-cn-chengdu` |
 | `OSS_ENDPOINT` | 否 | 服务器读写 OSS 的地址，同地域优先使用内网 Endpoint |
 | `OSS_PUBLIC_ENDPOINT` | 否 | 签发用户直连下载 URL 的公网 Endpoint |
-| `OSS_PREFIX` | 否 | 资料对象前缀，默认 `resource-center` |
+| `OSS_PREFIX` | 否 | 资料和证明材料对象前缀，默认 `resource-center` |
 | `OSS_CREDENTIAL_TYPE` | 否 | 当前支持 `access_key` |
 | `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` | 否 | 最小权限 RAM 程序用户密钥，仅保存在服务器 |
 
@@ -529,7 +529,7 @@ sudo systemctl status wenti
 
 ## 资料库存储说明
 
-配置 OSS 后，新上传的资料中心原文件和预览产物保存在 `<OSS_PREFIX>/originals/` 和 `<OSS_PREFIX>/previews/`；单文件下载在网站鉴权后跳转到 5 分钟有效的 OSS V4 签名地址，不再占用网站服务器的公网下行带宽。项目/文件夹层级仍由 MySQL 管理，改名时不搬运 OSS 大文件。配置 OSS 之前已有的本地资料仍可下载和预览，教程附件、时长证明等其他业务文件继续使用 `FILE_STORAGE_ROOT`。
+配置 OSS 后，新上传的资料中心文件和志愿时长证明材料会保存在 `<OSS_PREFIX>/originals/`，预览产物保存在 `<OSS_PREFIX>/previews/`；资料中心单文件下载在网站鉴权后跳转到 5 分钟有效的 OSS V4 签名地址，不再占用网站服务器的公网下行带宽。项目/文件夹层级仍由 MySQL 管理，改名时不搬运 OSS 大文件。配置 OSS 之前已有的本地资料和历史证明材料仍可下载和预览，教程附件继续使用 `FILE_STORAGE_ROOT`。
 
 历史资料迁移前必须同时备份 MySQL 与 `FILE_STORAGE_ROOT`，先运行 `npm run storage:migrate-resources-to-oss:dry-run`，确认统计后再运行 `npm run storage:migrate-resources-to-oss`。迁移脚本不删除本地文件。
 

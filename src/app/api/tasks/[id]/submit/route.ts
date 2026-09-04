@@ -4,7 +4,7 @@ import { requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { isVolunteer } from "@/lib/permissions";
 import { validateResourceName } from "@/lib/resource-drive";
-import { removeStoredKeys } from "@/lib/resource-storage";
+import { removeHourProofStorageKeys } from "@/lib/hour-proof-storage";
 import { getHourProofArtifactKeys, storeHourProofFile } from "@/lib/hour-proof-preview";
 
 export const runtime = "nodejs";
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     ]);
   } catch (error) {
     await prisma.taskSubmission.delete({ where: { id: submission.id } }).catch(() => undefined);
-    await removeStoredKeys([proofKey, ...getHourProofArtifactKeys("task", submission.id)]);
+    await removeHourProofStorageKeys([proofKey, ...getHourProofArtifactKeys("task", submission.id, proofKey)]);
     return NextResponse.json({ message: error instanceof Error ? error.message : "志愿时长申报提交失败" }, { status: 500 });
   }
 

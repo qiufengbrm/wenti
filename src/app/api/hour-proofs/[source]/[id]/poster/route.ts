@@ -4,7 +4,7 @@ import { requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { ensureHourProofPreview, type HourProofSource } from "@/lib/hour-proof-preview";
 import { canAccessAdmin } from "@/lib/permissions";
-import { getStoredFile } from "@/lib/resource-storage";
+import { getHourProofFile } from "@/lib/hour-proof-storage";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sou
   try {
     const { kind, posterKey } = await ensureHourProofPreview(source, proof, { requirePoster: true });
     if (kind !== "video" || !posterKey) return NextResponse.json({ message: "该文件没有视频封面" }, { status: 415 });
-    const stored = await getStoredFile(posterKey);
+    const stored = await getHourProofFile(posterKey);
     return new Response(stored.stream as never, {
       headers: { "Content-Type": "image/jpeg", "Content-Length": String(stored.size), "Content-Disposition": "inline", "X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store" }
     });

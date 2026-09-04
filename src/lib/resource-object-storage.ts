@@ -1,4 +1,4 @@
-/** 项目导读：资料中心 OSS 适配层：仅管理 resource-center/ 前缀，密钥始终留在服务端。 */
+/** 项目导读：OSS 适配层：仅管理配置前缀下的业务文件，密钥始终留在服务端。 */
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import OSS from "ali-oss";
@@ -49,7 +49,7 @@ export async function getResourceObjectMetadata(storageKey: string) {
   const result = await getInternalClient().head(storageKey);
   const headers = result.res.headers as OssHeaders;
   const size = Number(headerValue(headers, "content-length"));
-  if (!Number.isSafeInteger(size) || size < 0) throw new Error("OSS 资料大小无效");
+  if (!Number.isSafeInteger(size) || size < 0) throw new Error("OSS 文件大小无效");
   return { size };
 }
 
@@ -58,7 +58,7 @@ export async function getResourceObjectStream(storageKey: string, range?: { star
   const result = await getInternalClient().getStream(storageKey, {
     headers: range ? { Range: `bytes=${range.start}-${range.end}` } : undefined
   });
-  if (!result.stream) throw new Error("OSS 资料文件不存在");
+  if (!result.stream) throw new Error("OSS 文件不存在");
   return { stream: result.stream as NodeJS.ReadableStream };
 }
 
@@ -121,7 +121,7 @@ function createClient(usePublicEndpoint: boolean) {
 
 function getOssConfig() {
   const credentialType = process.env.OSS_CREDENTIAL_TYPE?.trim() || "access_key";
-  if (credentialType !== "access_key") throw new Error(`资料中心暂不支持 OSS 凭证类型：${credentialType}`);
+  if (credentialType !== "access_key") throw new Error(`暂不支持 OSS 凭证类型：${credentialType}`);
   const bucket = requiredEnv("OSS_BUCKET");
   const region = requiredEnv("OSS_REGION");
   const endpoint = normalizeEndpoint(requiredEnv("OSS_ENDPOINT"));
@@ -145,7 +145,7 @@ function getObjectPrefix() {
 }
 
 function assertResourceObjectKey(storageKey: string) {
-  if (!isResourceObjectKey(storageKey) || storageKey.includes("..") || storageKey.startsWith("/")) throw new Error("非法 OSS 资料路径");
+  if (!isResourceObjectKey(storageKey) || storageKey.includes("..") || storageKey.startsWith("/")) throw new Error("非法 OSS 文件路径");
 }
 
 function safeObjectName(fileName: string) {

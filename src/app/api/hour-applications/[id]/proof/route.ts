@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { canAccessAdmin } from "@/lib/permissions";
-import { getStoredFile } from "@/lib/resource-storage";
+import { getHourProofFile } from "@/lib/hour-proof-storage";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (!application || (!canAccessAdmin(auth.user.role) && application.userId !== auth.user.id)) return NextResponse.json({ message: "证明材料不存在或无权访问" }, { status: 404 });
   if (!application.proofFileUrl || !application.proofFileName) return NextResponse.json({ message: "未上传证明材料" }, { status: 404 });
   try {
-    const stored = await getStoredFile(application.proofFileUrl);
+    const stored = await getHourProofFile(application.proofFileUrl);
     return new Response(stored.stream as never, {
       headers: {
         "Content-Type": application.proofFileType || "application/octet-stream",
@@ -26,7 +26,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       }
     });
   } catch {
-    return NextResponse.json({ message: "磁盘中的证明材料不存在" }, { status: 404 });
+    return NextResponse.json({ message: "存储中的证明材料不存在" }, { status: 404 });
   }
 }
 

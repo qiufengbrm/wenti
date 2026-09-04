@@ -12,8 +12,6 @@ export function VolunteerHourApplicationForm() {
   const router = useRouter();
   const [workContent, setWorkContent] = useState("");
   const [serviceDate, setServiceDate] = useState("");
-  const [serviceStartClockTime, setServiceStartClockTime] = useState("");
-  const [serviceEndClockTime, setServiceEndClockTime] = useState("");
   const [hours, setHours] = useState("");
   const [proof, setProof] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
@@ -35,8 +33,6 @@ export function VolunteerHourApplicationForm() {
     const form = new FormData();
     form.append("workContent", workContent);
     form.append("serviceDate", serviceDate);
-    form.append("serviceStartClockTime", serviceStartClockTime);
-    form.append("serviceEndClockTime", serviceEndClockTime);
     form.append("hours", hours);
     form.append("notes", notes);
     if (proof) form.append("proof", proof);
@@ -54,17 +50,12 @@ export function VolunteerHourApplicationForm() {
   return (
     <Card className="mx-auto max-w-3xl p-5 sm:p-7">
       <form className="grid gap-5" onSubmit={submit}>
-        <div className="rounded-[12px] bg-[#0071e3]/[0.06] px-4 py-3 text-[13px] leading-6 text-[#515154]">
-          该入口用于申报未通过任务广场发布的志愿服务。提交后由部门负责人审核，通过后才会计入个人志愿时长。
-        </div>
         <label className="grid gap-2 text-sm font-medium text-[#3a3a3c]">
           志愿服务内容
           <textarea className={textareaClass} maxLength={2000} onChange={(event) => setWorkContent(event.target.value)} placeholder="说明参加了什么志愿服务、承担了哪些工作" required value={workContent} />
         </label>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="grid gap-2 text-sm font-medium text-[#3a3a3c] sm:col-span-2"><span>日期</span><DatePicker ariaLabel="选择志愿服务日期" className="max-w-sm" onChange={setServiceDate} required value={serviceDate} /></div>
-          <label className="grid gap-2 text-sm font-medium text-[#3a3a3c]">开始时间 <span className="text-xs font-normal text-[#86868b]">选填</span><input className={inputClass} onChange={(event) => setServiceStartClockTime(event.target.value)} step={60} type="time" value={serviceStartClockTime} /></label>
-          <label className="grid gap-2 text-sm font-medium text-[#3a3a3c]">结束时间 <span className="text-xs font-normal text-[#86868b]">选填</span><input className={inputClass} onChange={(event) => setServiceEndClockTime(event.target.value)} step={60} type="time" value={serviceEndClockTime} /></label>
         </div>
         <label className="grid gap-2 text-sm font-medium text-[#3a3a3c]">
           申请志愿时长

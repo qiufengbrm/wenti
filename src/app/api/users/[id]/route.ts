@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { getHourProofArtifactKeys } from "@/lib/hour-proof-preview";
+import { removeHourProofStorageKeys } from "@/lib/hour-proof-storage";
 import { isSuperAdmin } from "@/lib/permissions";
-import { removeStoredKeys } from "@/lib/resource-storage";
 
 export const runtime = "nodejs";
 
@@ -60,8 +60,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     prisma.fileResource.findMany({ where: { uploadedById: id }, select: { storageKey: true, previewKey: true, posterKey: true } })
   ]);
   const storedKeys = [
-    ...taskProofs.flatMap((item) => [item.proofFileUrl, ...getHourProofArtifactKeys("task", item.id)]),
-    ...hourProofs.flatMap((item) => [item.proofFileUrl, ...getHourProofArtifactKeys("direct", item.id)]),
+    ...taskProofs.flatMap((item) => [item.proofFileUrl, ...getHourProofArtifactKeys("task", item.id, item.proofFileUrl)]),
+    ...hourProofs.flatMap((item) => [item.proofFileUrl, ...getHourProofArtifactKeys("direct", item.id, item.proofFileUrl)]),
     ...resourceFiles.flatMap((item) => [item.storageKey, item.previewKey, item.posterKey])
   ];
   const impact = formatImpact(target);
@@ -89,7 +89,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     });
   });
 
-  await removeStoredKeys(storedKeys);
+  await removeHourProofStorageKeys(storedKeys);
   return NextResponse.json({ data: impact, message: "账号及个人关联信息已永久删除，共享业务内容已安全转交" });
 }
 
