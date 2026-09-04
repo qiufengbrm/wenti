@@ -244,6 +244,16 @@ FFMPEG_PATH="/usr/bin/ffmpeg"
 TEMP_FILE_RETENTION_HOURS="24"
 ORPHAN_PREVIEW_RETENTION_DAYS="7"
 TUTORIAL_INLINE_IMAGE_RETENTION_HOURS="24"
+
+# 资料中心 OSS（全部填写时启用）
+OSS_BUCKET="wenti-resource"
+OSS_REGION="oss-cn-chengdu"
+OSS_ENDPOINT="https://oss-cn-chengdu-internal.aliyuncs.com"
+OSS_PUBLIC_ENDPOINT="https://oss-cn-chengdu.aliyuncs.com"
+OSS_PREFIX="resource-center"
+OSS_CREDENTIAL_TYPE="access_key"
+OSS_ACCESS_KEY_ID="RAM_USER_ACCESS_KEY_ID"
+OSS_ACCESS_KEY_SECRET="RAM_USER_ACCESS_KEY_SECRET"
 ```
 
 代码当前实际读取的环境变量只有：
@@ -257,6 +267,13 @@ TUTORIAL_INLINE_IMAGE_RETENTION_HOURS="24"
 | `TEMP_FILE_RETENTION_HOURS` | 否 | `temp/` 临时内容保留小时数，默认 24 |
 | `ORPHAN_PREVIEW_RETENTION_DAYS` | 否 | 数据库未引用的预览文件保留天数，默认 7 |
 | `TUTORIAL_INLINE_IMAGE_RETENTION_HOURS` | 否 | 已上传但未随教程保存的正文图片保留小时数，默认 24 |
+| `OSS_BUCKET` | 否 | 资料中心使用的私有 Bucket；与其他 OSS 变量成套配置 |
+| `OSS_REGION` | 否 | OSS V4 签名地域，例如 `oss-cn-chengdu` |
+| `OSS_ENDPOINT` | 否 | 服务器读写 OSS 的地址，同地域优先使用内网 Endpoint |
+| `OSS_PUBLIC_ENDPOINT` | 否 | 签发用户直连下载 URL 的公网 Endpoint |
+| `OSS_PREFIX` | 否 | 资料对象前缀，默认 `resource-center` |
+| `OSS_CREDENTIAL_TYPE` | 否 | 当前支持 `access_key` |
+| `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` | 否 | 最小权限 RAM 程序用户密钥，仅保存在服务器 |
 
 `.env.example` 中的 `NEXTAUTH_SECRET` 和 `NEXTAUTH_URL` 目前未被登录代码使用，不能依赖它们保护当前会话。
 
@@ -511,6 +528,10 @@ sudo systemctl status wenti
 如果只改前端样式或交互，`npm ci` 和 `migrate deploy` 通常不会改变任何东西；如果改了依赖或数据库迁移，它们就是必须步骤。`git pull` 提示本地有未提交改动时应先停止并确认，不要在生产环境直接强制覆盖。更新失败时，应恢复上一版代码和与其匹配的数据库备份。不要在生产环境执行 `prisma migrate dev` 或手工修改迁移历史。
 
 ## 资料库存储说明
+
+配置 OSS 后，新上传的资料中心原文件和预览产物保存在 `<OSS_PREFIX>/originals/` 和 `<OSS_PREFIX>/previews/`；单文件下载在网站鉴权后跳转到 5 分钟有效的 OSS V4 签名地址，不再占用网站服务器的公网下行带宽。项目/文件夹层级仍由 MySQL 管理，改名时不搬运 OSS 大文件。配置 OSS 之前已有的本地资料仍可下载和预览，教程附件、时长证明等其他业务文件继续使用 `FILE_STORAGE_ROOT`。
+
+历史资料迁移前必须同时备份 MySQL 与 `FILE_STORAGE_ROOT`，先运行 `npm run storage:migrate-resources-to-oss:dry-run`，确认统计后再运行 `npm run storage:migrate-resources-to-oss`。迁移脚本不删除本地文件。
 
 `FILE_STORAGE_ROOT` 下会自动创建：
 

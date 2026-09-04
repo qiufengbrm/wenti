@@ -1,18 +1,16 @@
 /** 项目导读：资料打包下载：把选中的文件和文件夹流式装进 ZIP；边读边发，不让服务器一次吞下整桌菜。 */
-import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
 import path from "node:path";
 import { PassThrough, Readable } from "node:stream";
 import archiver from "archiver";
 import { prisma } from "@/lib/db";
 import { canAccessFolder, getAccessibleFile } from "@/lib/resource-drive";
-import { resolveStorageKey } from "@/lib/resource-storage";
+import { getResourceFile, resourceFileExists } from "@/lib/resource-file-storage";
 import type { CurrentUser } from "@/types/user";
 
 export type ResourceArchiveSelection = { kind: "file" | "folder"; id: string };
 
 type ArchiveEntry = {
-  absolutePath?: string;
+  storageKey?: string;
   archivePath: string;
   directory?: boolean;
 };
@@ -93,7 +91,10 @@ export async function createResourceArchive(user: CurrentUser, selections: Resou
 
   for (const entry of entries) {
     if (entry.directory) archive.append(Buffer.alloc(0), { name: entry.archivePath });
-    else if (entry.absolutePath) archive.append(createReadStream(entry.absolutePath), { name: entry.archivePath });
+    else if (entry.storageKey) {
+      const stored = await getResourceFile(entry.storageKey);
+      archive.append(stored.stream as Readable, { name: entry.archivePath });
+    }
   }
   void archive.finalize();
 
@@ -127,11 +128,9 @@ async function collectAccessibleFolderPaths(user: CurrentUser, rootId: string, r
 
 async function storedFileEntry(storageKey: string | null, archivePath: string): Promise<ArchiveEntry | null> {
   if (!storageKey) return null;
-  const absolutePath = resolveStorageKey(storageKey);
   try {
-    const metadata = await stat(absolutePath);
-    if (!metadata.isFile()) return null;
-    return { absolutePath, archivePath };
+    if (!(await resourceFileExists(storageKey))) return null;
+    return { storageKey, archivePath };
   } catch {
     return null;
   }

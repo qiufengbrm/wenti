@@ -2,8 +2,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireApiUser } from "@/app/api/_utils";
 import { getAccessibleFile } from "@/lib/resource-drive";
+import { getResourceFile, getResourceFileMetadata } from "@/lib/resource-file-storage";
 import { ensurePreviewArtifacts } from "@/lib/resource-preview";
-import { getStoredFile } from "@/lib/resource-storage";
 
 export const runtime = "nodejs";
 
@@ -17,12 +17,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { kind, previewKey } = await ensurePreviewArtifacts(file);
-    const metadata = await getStoredFile(previewKey);
+    const metadata = await getResourceFileMetadata(previewKey);
     const range = kind === "video" ? parseRange(request.headers.get("range"), metadata.size) : null;
     if (range === "invalid") {
       return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${metadata.size}` } });
     }
-    const stored = range ? await getStoredFile(previewKey, range) : metadata;
+    const stored = await getResourceFile(previewKey, range || undefined);
     const contentType = kind === "image" ? "image/jpeg" : kind === "video" ? "video/mp4" : "application/pdf";
     const contentLength = range ? range.end - range.start + 1 : stored.size;
     return new Response(stored.stream as never, {

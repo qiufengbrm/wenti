@@ -4,8 +4,10 @@ import { z } from "zod";
 import { requireApiAdmin } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { ensureNameAvailable, validateResourceName } from "@/lib/resource-drive";
+import { removeResourceStorageKeys } from "@/lib/resource-file-storage";
 import { getResourceOriginalFileKey } from "@/lib/resource-file-tree";
-import { moveStoredFile, removeStoredKeys } from "@/lib/resource-storage";
+import { isResourceObjectKey } from "@/lib/resource-object-storage";
+import { moveStoredFile } from "@/lib/resource-storage";
 
 const updateSchema = z.object({ name: z.string().optional(), parentId: z.string().nullable().optional() });
 
@@ -28,7 +30,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!existing.projectId) return NextResponse.json({ message: "文件尚未归入活动项目" }, { status: 409 });
   if (!(await ensureNameAvailable(existing.projectId, parentId, name, { kind: "file", id }))) return NextResponse.json({ message: "目标目录已存在同名项目" }, { status: 409 });
 
-  const nextStorageKey = existing.storageKey ? await getResourceOriginalFileKey(existing.projectId, parentId, name) : null;
+  const nextStorageKey = existing.storageKey
+    ? isResourceObjectKey(existing.storageKey) ? existing.storageKey : await getResourceOriginalFileKey(existing.projectId, parentId, name)
+    : null;
   const storageChanged = Boolean(existing.storageKey && nextStorageKey && existing.storageKey !== nextStorageKey);
   try {
     if (storageChanged) await moveStoredFile(existing.storageKey!, nextStorageKey!);
@@ -57,6 +61,6 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   const file = await prisma.fileResource.findUnique({ where: { id }, select: { storageKey: true, previewKey: true, posterKey: true } });
   if (!file) return NextResponse.json({ message: "文件不存在" }, { status: 404 });
   await prisma.fileResource.delete({ where: { id } });
-  await removeStoredKeys([file.storageKey, file.previewKey, file.posterKey]);
+  await removeResourceStorageKeys([file.storageKey, file.previewKey, file.posterKey]);
   return NextResponse.json({ message: "文件已永久删除" });
 }

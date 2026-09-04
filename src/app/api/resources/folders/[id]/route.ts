@@ -4,8 +4,9 @@ import { z } from "zod";
 import { requireApiAdmin } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { collectFolderTree, ensureNameAvailable, validateResourceName, wouldCreateFolderCycle } from "@/lib/resource-drive";
+import { removeResourceStorageKeys } from "@/lib/resource-file-storage";
 import { getResourceOriginalDirectoryKey, synchronizeProjectOriginalTree } from "@/lib/resource-file-tree";
-import { removeStoredDirectory, removeStoredKeys } from "@/lib/resource-storage";
+import { removeStoredDirectory } from "@/lib/resource-storage";
 
 const updateSchema = z.object({
   name: z.string().optional(),
@@ -75,7 +76,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   const files = await prisma.fileResource.findMany({ where: { folderId: { in: folderIds } }, select: { storageKey: true, previewKey: true, posterKey: true } });
   const [folderCount, fileCount] = [folderIds.length, files.length];
   await prisma.resourceFolder.delete({ where: { id } });
-  await removeStoredKeys(files.flatMap((file) => [file.storageKey, file.previewKey, file.posterKey]));
+  await removeResourceStorageKeys(files.flatMap((file) => [file.storageKey, file.previewKey, file.posterKey]));
   await removeStoredDirectory(directoryKey);
   return NextResponse.json({ message: `已永久删除 ${folderCount} 个文件夹和 ${fileCount} 个文件` });
 }

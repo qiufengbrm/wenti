@@ -2,8 +2,8 @@
 import { NextResponse } from "next/server";
 import { requireApiUser } from "@/app/api/_utils";
 import { getAccessibleFile } from "@/lib/resource-drive";
+import { getResourceFile } from "@/lib/resource-file-storage";
 import { ensurePreviewArtifacts } from "@/lib/resource-preview";
-import { getStoredFile } from "@/lib/resource-storage";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const { kind, posterKey } = await ensurePreviewArtifacts(file, { requirePoster: true });
     if (kind !== "video" || !posterKey) return NextResponse.json({ message: "该文件没有视频封面" }, { status: 415 });
-    const stored = await getStoredFile(posterKey);
+    const stored = await getResourceFile(posterKey);
     return new Response(stored.stream as never, {
       headers: {
         "Content-Type": "image/jpeg",

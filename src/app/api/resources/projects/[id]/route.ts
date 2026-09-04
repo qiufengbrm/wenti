@@ -4,8 +4,9 @@ import { z } from "zod";
 import { requireApiAdmin } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { parseResourceProjectDate, validateResourceName } from "@/lib/resource-drive";
+import { removeResourceStorageKeys } from "@/lib/resource-file-storage";
 import { synchronizeProjectOriginalTree } from "@/lib/resource-file-tree";
-import { getOriginalDirectoryKey, removeStoredDirectory, removeStoredKeys } from "@/lib/resource-storage";
+import { getOriginalDirectoryKey, removeStoredDirectory } from "@/lib/resource-storage";
 
 const updateSchema = z.object({ name: z.string().optional(), description: z.string().max(2000).nullable().optional(), projectDate: z.string().optional() });
 
@@ -66,7 +67,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
   if (!project) return NextResponse.json({ message: "活动项目不存在" }, { status: 404 });
   const directoryKey = getOriginalDirectoryKey(project.name);
   await prisma.resourceProject.delete({ where: { id } });
-  await removeStoredKeys(project.files.flatMap((file) => [file.storageKey, file.previewKey, file.posterKey]));
+  await removeResourceStorageKeys(project.files.flatMap((file) => [file.storageKey, file.previewKey, file.posterKey]));
   await removeStoredDirectory(directoryKey);
   return NextResponse.json({ message: `已永久删除项目及其中 ${project._count.folders} 个文件夹、${project._count.files} 个文件` });
 }

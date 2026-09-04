@@ -2,7 +2,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { requireApiUser } from "@/app/api/_utils";
 import { getAccessibleFile } from "@/lib/resource-drive";
-import { getStoredFile } from "@/lib/resource-storage";
+import { getResourceFile } from "@/lib/resource-file-storage";
+import { createSignedResourceDownloadUrl, isResourceObjectKey } from "@/lib/resource-object-storage";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!file.storageKey) return NextResponse.json({ message: "原文件不存在" }, { status: 404 });
 
   try {
-    const stored = await getStoredFile(file.storageKey);
+    if (isResourceObjectKey(file.storageKey)) {
+      const url = await createSignedResourceDownloadUrl(file.storageKey, file.fileName ?? file.title, file.fileType);
+      const response = NextResponse.redirect(url, 307);
+      response.headers.set("Cache-Control", "private, no-store");
+      return response;
+    }
+    const stored = await getResourceFile(file.storageKey);
     return new Response(stored.stream as never, {
       headers: {
         "Content-Type": file.fileType || "application/octet-stream",
@@ -28,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     });
   } catch {
-    return NextResponse.json({ message: "磁盘中的原文件不存在" }, { status: 404 });
+    return NextResponse.json({ message: "原文件不存在" }, { status: 404 });
   }
 }
 

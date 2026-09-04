@@ -12,6 +12,8 @@
     "prisma:migrate": "prisma migrate dev",
     "storage:sync-tree": "node scripts/sync-resource-storage-tree.mjs",
     "storage:sync-tree:dry-run": "node scripts/sync-resource-storage-tree.mjs --dry-run",
+    "storage:migrate-resources-to-oss": "node --env-file=.env.production scripts/migrate-resource-files-to-oss.mjs",
+    "storage:migrate-resources-to-oss:dry-run": "node --env-file=.env.production scripts/migrate-resource-files-to-oss.mjs --dry-run",
     "storage:cleanup": "node scripts/cleanup-storage.mjs",
     "storage:cleanup:dry-run": "node scripts/cleanup-storage.mjs --dry-run"
   },
@@ -20,6 +22,7 @@
   },
   "dependencies": {
     "@prisma/client": "6.1.0",
+    "ali-oss": "^6.23.0",
     "archiver": "^7.0.1",
     "clsx": "^2.1.1",
     "lucide-react": "0.468.0",
@@ -32,6 +35,7 @@
     "zod": "3.24.1"
   },
   "devDependencies": {
+    "@types/ali-oss": "^6.23.3",
     "@types/archiver": "^6.0.4",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",

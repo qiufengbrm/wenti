@@ -1,5 +1,6 @@
 /** 项目导读：资料文件落盘逻辑：同时照顾数据库记录与磁盘路径；两边必须对得上账，不能一个说东一个说西。 */
 import { prisma } from "@/lib/db";
+import { isResourceObjectKey } from "@/lib/resource-object-storage";
 import {
   ensureStoredDirectory,
   getOriginalDirectoryKey,
@@ -57,6 +58,8 @@ export async function synchronizeProjectOriginalTree(projectId: string) {
   let moved = 0;
   for (const file of project.files) {
     if (!file.storageKey) continue;
+    // OSS 使用稳定对象 Key，项目或文件夹改名时不搬运大文件。
+    if (isResourceObjectKey(file.storageKey)) continue;
     const desiredKey = getOriginalFileKey(project.name, resolveFolderNames(file.folderId), file.fileName ?? file.title);
     if (file.storageKey === desiredKey) continue;
     const previousKey = file.storageKey;
