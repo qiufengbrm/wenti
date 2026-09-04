@@ -32,4 +32,35 @@ npm run dev
 - [完整项目说明](./README_FULL.md)
 - [生产部署手册](./README_DEPLOY.md)
 
+## 更新生产服务器
+
+本地修改完成后先提交并推送：
+
+```bash
+git status
+npm run build
+git add <本次改动文件>
+git commit -m "说明本次改动"
+git push origin main
+```
+
+服务器在 `/opt/wenti` 拉取、构建、重启并验证：
+
+```bash
+cd /opt/wenti
+sudo -u wenti git fetch origin
+sudo -u wenti git status -sb
+sudo systemctl stop wenti
+sudo -u wenti git pull --ff-only origin main
+sudo -u wenti npm ci
+sudo -u wenti npx prisma generate
+sudo -u wenti npx prisma migrate deploy
+sudo -u wenti npm run build
+sudo systemctl start wenti
+sudo systemctl status wenti --no-pager
+curl -I http://127.0.0.1:3000
+```
+
+完整更新、验证和回滚步骤见 [生产部署手册](./README_DEPLOY.md#16-更新与回滚)。
+
 > 请勿提交 `.env*`、数据库备份、上传文件、`node_modules` 或 `.next`。

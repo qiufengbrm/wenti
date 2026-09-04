@@ -20,22 +20,28 @@ https://github.com/qiufengbrm/wenti
 
 ```bash
 cd /Users/qmac/Documents/Program/wenti
-git status
-git add .
+npm run build
+git status --short
+git add <本次改动文件>
 git commit -m "说明本次改动"
-git push
+git push origin main
 ```
 
 服务器常规更新流程：
 
 ```bash
 cd /opt/wenti
-git pull
-npm ci
-npx prisma generate
-npx prisma migrate deploy
-npm run build
+sudo -u wenti git fetch origin
+sudo -u wenti git status -sb
+sudo systemctl stop wenti
+sudo -u wenti git pull --ff-only origin main
+sudo -u wenti npm ci
+sudo -u wenti npx prisma generate
+sudo -u wenti npx prisma migrate deploy
+sudo -u wenti npm run build
 sudo systemctl restart wenti
+sudo systemctl status wenti --no-pager
+curl -I http://127.0.0.1:3000
 ```
 
 注意：
@@ -509,23 +515,56 @@ sudo systemctl restart wenti
 
 ## 更新部署
 
-每次发布新代码：
+每次发布新代码，应先在开发机完成构建验证、提交和推送，再到服务器拉取同一个提交。不要把开发机的 `.env*`、`.next`、`node_modules` 或上传文件目录复制到服务器。
+
+开发机发布前：
+
+```bash
+cd /Users/qmac/Documents/Program/wenti
+npm run build
+git status --short
+git add <本次改动文件>
+git commit -m "说明本次改动"
+git push origin main
+git rev-parse --short HEAD
+```
+
+记录最后输出的提交号。服务器更新时应确认拉到的提交号一致：
+
+```bash
+cd /opt/wenti
+sudo -u wenti git fetch origin
+sudo -u wenti git status -sb
+sudo -u wenti git rev-parse --short HEAD
+sudo -u wenti git rev-parse --short origin/main
+```
+
+如果 `git status -sb` 显示服务器有未提交改动，先停止并确认来源；不要直接强制覆盖。确认可以更新后执行：
 
 ```bash
 cd /opt/wenti
 sudo systemctl stop wenti
-
-sudo -u wenti git pull
+sudo -u wenti git pull --ff-only origin main
 sudo -u wenti npm ci
 sudo -u wenti npx prisma generate
 sudo -u wenti npx prisma migrate deploy
+sudo -u wenti npx prisma migrate status
 sudo -u wenti npm run build
-
-sudo systemctl start wenti
-sudo systemctl status wenti
 ```
 
-如果只改前端样式或交互，`npm ci` 和 `migrate deploy` 通常不会改变任何东西；如果改了依赖或数据库迁移，它们就是必须步骤。`git pull` 提示本地有未提交改动时应先停止并确认，不要在生产环境直接强制覆盖。更新失败时，应恢复上一版代码和与其匹配的数据库备份。不要在生产环境执行 `prisma migrate dev` 或手工修改迁移历史。
+构建通过后再启动并验证：
+
+```bash
+sudo systemctl start wenti
+sudo systemctl status wenti --no-pager
+curl -I http://127.0.0.1:3000
+sudo journalctl -u wenti -n 80 --no-pager
+sudo -u wenti git rev-parse --short HEAD
+```
+
+验收至少包括：三类账号登录、志愿时长申请与审核、证明材料上传/下载/预览、资料中心下载/预览、课表上传和 Excel 导出。如果本次修改了 OSS、数据库迁移、Nginx 或 systemd，还必须额外验证对应功能。
+
+如果只改前端样式或交互，`npm ci` 和 `migrate deploy` 通常不会改变任何东西；如果改了依赖或数据库迁移，它们就是必须步骤。更新失败时，应恢复上一版代码和与其匹配的数据库备份。不要在生产环境执行 `prisma migrate dev`、`prisma db push`、`prisma migrate reset` 或手工修改迁移历史。
 
 ## 资料库存储说明
 

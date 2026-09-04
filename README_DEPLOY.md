@@ -602,29 +602,75 @@ sudo systemctl status wenti --no-pager
 
 ### 常规更新
 
-更新前先备份数据库、存储和当前代码版本：
+完整发布链路分为两段：开发机先验证并推送，服务器再拉取同一个提交、构建、重启和验收。
+
+开发机发布前执行：
 
 ```bash
+cd /Users/qmac/Documents/Program/wenti
+npm run build
+git status --short
+git add <本次改动文件>
+git commit -m "说明本次改动"
+git push origin main
+git rev-parse --short HEAD
+```
+
+记录最后输出的提交号，服务器更新后用它核对版本。不要提交 `.env*`、数据库备份、上传目录、`node_modules/` 或 `.next/`。
+
+服务器更新前先备份数据库、存储和当前代码版本：
+
+```bash
+cd /opt/wenti
+sudo -u wenti git rev-parse --short HEAD
 mysqldump --single-transaction -u wenti_app -p wenti_center > wenti-before-update.sql
 rsync -aH /var/lib/wenti-storage/ /安全备份目录/wenti-storage/
 ```
 
-然后执行：
+先只读检查远端和服务器工作区：
+
+```bash
+cd /opt/wenti
+sudo -u wenti git fetch origin
+sudo -u wenti git status -sb
+sudo -u wenti git rev-parse --short HEAD
+sudo -u wenti git rev-parse --short origin/main
+```
+
+如果 `git status -sb` 显示服务器有未提交改动，立即停止并报告，不要用 `reset --hard`、`checkout --` 或强制覆盖。确认可以更新后执行：
 
 ```bash
 cd /opt/wenti
 sudo systemctl stop wenti
 
-sudo -u wenti git pull
+sudo -u wenti git pull --ff-only origin main
 sudo -u wenti npm ci
 sudo -u wenti npx prisma generate
 sudo -u wenti npx prisma migrate deploy
+sudo -u wenti npx prisma migrate status
 sudo -u wenti npm run build
-sudo systemctl start wenti
-sudo systemctl status wenti --no-pager
 ```
 
-如果本次只改了页面样式或交互，`npm ci` 和 `prisma migrate deploy` 通常不会产生实质变化，但保留执行可以减少“忘了跑一步”的事故。若 `git pull` 提示本地有未提交改动，先停止并报告，不要用 `reset --hard` 或强制覆盖。
+只有以上步骤全部成功，才启动服务：
+
+```bash
+sudo systemctl start wenti
+sudo systemctl status wenti --no-pager
+curl -I http://127.0.0.1:3000
+sudo journalctl -u wenti -n 80 --no-pager
+sudo -u wenti git rev-parse --short HEAD
+```
+
+最后用浏览器完成业务验收：
+
+- 三类账号能从各自入口登录。
+- 志愿者可以提交志愿时长申请，申请表只需填写日期，不需要具体开始/结束时间。
+- 辅助证明材料可以上传、下载、预览；启用 OSS 时，新证明材料进入 OSS，历史本地证明仍可访问。
+- 部门负责人可以审核通过/驳回志愿时长，驳回会清理对应证明附件和预览产物。
+- 资料中心文件上传、下载、图片/视频/Office 预览正常。
+- 课表上传、管理员空闲筛选、志愿时长 Excel 导出正常。
+
+如果本次只改了页面样式或交互，`npm ci` 和 `prisma migrate deploy` 通常不会产生实质变化，但保留执行可以减少“忘了跑一步”的事故。若 `git pull --ff-only` 提示无法快进，说明远端和服务器代码历史不一致，应停止并确认，不要在生产环境直接 merge 或 rebase。
 
 ### 回滚原则
 
