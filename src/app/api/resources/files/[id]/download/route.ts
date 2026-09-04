@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     if (isResourceObjectKey(file.storageKey)) {
-      const url = await createSignedResourceDownloadUrl(file.storageKey, file.fileName ?? file.title, file.fileType);
+      const url = await createSignedResourceDownloadUrl(file.storageKey, file.fileName ?? file.title);
       const response = NextResponse.redirect(url, 307);
       response.headers.set("Cache-Control", "private, no-store");
       return response;

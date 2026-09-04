@@ -81,15 +81,14 @@ export async function removeResourceObjects(keys: Array<string | null | undefine
   }
 }
 
-export async function createSignedResourceDownloadUrl(storageKey: string, fileName: string, contentType?: string | null) {
+export async function createSignedResourceDownloadUrl(storageKey: string, fileName: string) {
   assertResourceObjectKey(storageKey);
   return getPublicClient().signatureUrlV4(
     "GET",
     300,
     {
       queries: {
-        "response-content-disposition": contentDisposition(fileName),
-        "response-content-type": contentType || "application/octet-stream"
+        "response-content-disposition": contentDisposition(fileName)
       }
     },
     storageKey
