@@ -92,6 +92,7 @@ export async function createOfficePreview(upload: StoredUpload) {
   const previewName = `${randomUUID()}.pdf`;
   const previewKey = path.posix.join("previews", previewName);
   const previewPath = resolveStorageKey(previewKey);
+  const generatedPath = path.join(path.dirname(previewPath), `${path.basename(upload.absolutePath, path.extname(upload.absolutePath))}.pdf`);
   // 每次转换独享 LibreOffice 配置目录，免得并发任务互相串门、顺手锁个文件。
   const profilePath = path.join(root, "temp", randomUUID());
   await mkdir(profilePath, { recursive: true });
@@ -115,6 +116,10 @@ export async function createOfficePreview(upload: StoredUpload) {
         env: { ...process.env, FONTCONFIG_FILE: fontConfigPath }
       }
     );
+    if (generatedPath !== previewPath) {
+      await access(generatedPath, constants.R_OK);
+      await rename(generatedPath, previewPath);
+    }
     await access(previewPath, constants.R_OK);
     return previewKey;
   } finally {

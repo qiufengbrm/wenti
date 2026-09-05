@@ -124,7 +124,13 @@ export async function POST(request: NextRequest) {
         where: { id: file.id },
         data: { previewKey: result.previewKey, posterKey: result.posterKey ?? null, previewStatus: "READY" }
       });
-    } catch {
+    } catch (error) {
+      console.error("[resources/upload] preview generation failed", {
+        fileId: file.id,
+        fileName: file.fileName,
+        previewKind,
+        error
+      });
       await removeResourceStorageKeys(uploadedArtifacts);
       file = await prisma.fileResource.update({ where: { id: file.id }, data: { previewStatus: "FAILED" } });
     }
