@@ -562,7 +562,7 @@ sudo journalctl -u wenti -n 80 --no-pager
 sudo -u wenti git rev-parse --short HEAD
 ```
 
-验收至少包括：三类账号登录、志愿时长申请与审核、证明材料上传/下载/预览、资料中心下载/预览、课表上传和 Excel 导出。如果本次修改了 OSS、数据库迁移、Nginx 或 systemd，还必须额外验证对应功能。
+验收至少包括：新标签页访问 `/` 和 `/login` 时首屏样式完整、三类账号登录、志愿时长申请与审核、证明材料上传/下载/预览、资料中心下载/预览、课表上传和 Excel 导出。根布局会在 Next.js 样式资源因新旧构建错配而失效时自动绕过旧 HTML 缓存重载一次，并用时间锁避免持续网络故障造成刷新循环。如果本次修改了 OSS、数据库迁移、Nginx 或 systemd，还必须额外验证对应功能。
 
 如果只改前端样式或交互，`npm ci` 和 `migrate deploy` 通常不会改变任何东西；如果改了依赖或数据库迁移，它们就是必须步骤。更新失败时，应恢复上一版代码和与其匹配的数据库备份。不要在生产环境执行 `prisma migrate dev`、`prisma db push`、`prisma migrate reset` 或手工修改迁移历史。
 
