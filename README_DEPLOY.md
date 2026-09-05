@@ -670,6 +670,22 @@ sudo -u wenti git rev-parse --short HEAD
 - 资料中心文件上传、下载、图片/视频/Office 预览正常。
 - 课表上传、管理员空闲筛选、志愿时长 Excel 导出正常。
 
+Office 预览 PDF 按需生成并保留 7 天。部署后先检查清理结果，再为 `wenti` 用户配置每天一次的定时清理：
+
+```bash
+cd /opt/wenti
+sudo -u wenti node --env-file=.env.production scripts/cleanup-storage.mjs --dry-run
+sudo crontab -u wenti -e
+```
+
+在 crontab 中加入：
+
+```cron
+20 3 * * * cd /opt/wenti && /usr/bin/node --env-file=.env.production scripts/cleanup-storage.mjs >> /var/log/wenti-storage-cleanup.log 2>&1
+```
+
+如需调整保存时间，可在 `.env.production` 设置 `OFFICE_PREVIEW_RETENTION_DAYS`，默认值为 `7`。
+
 如果本次只改了页面样式或交互，`npm ci` 和 `prisma migrate deploy` 通常不会产生实质变化，但保留执行可以减少“忘了跑一步”的事故。若 `git pull --ff-only` 提示无法快进，说明远端和服务器代码历史不一致，应停止并确认，不要在生产环境直接 merge 或 rebase。
 
 ### 回滚原则

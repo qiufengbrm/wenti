@@ -8,7 +8,7 @@ import { canAccessFolder, ensureNameAvailable, validateResourceName } from "@/li
 import { removeResourceStorageKeys } from "@/lib/resource-file-storage";
 import { getResourceOriginalFileKey } from "@/lib/resource-file-tree";
 import { createResourceObjectKey, isResourceObjectStorageEnabled, putResourceObjectFromPath } from "@/lib/resource-object-storage";
-import { createImagePreview, createOfficePreview, createVideoPreview, getPreviewKind, MAX_RESOURCE_FILE_SIZE, removeStoredKeys, resolveStorageKey, storeUploadedFile } from "@/lib/resource-storage";
+import { createImagePreview, createVideoPreview, getPreviewKind, MAX_RESOURCE_FILE_SIZE, removeStoredKeys, resolveStorageKey, storeUploadedFile } from "@/lib/resource-storage";
 
 export const runtime = "nodejs";
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
   if (!stored || !storageKey) return NextResponse.json({ message: "文件保存失败" }, { status: 500 });
 
   const previewKind = sourcePreviewKind;
-  const requiresConversion = previewKind === "office" || previewKind === "image" || previewKind === "video";
+  const requiresConversion = previewKind === "image" || previewKind === "video";
   const initialStatus = previewKind === "pdf" ? "READY" : requiresConversion ? "PENDING" : "NONE";
   let file;
   let previewErrorMessage = "";
@@ -105,16 +105,14 @@ export async function POST(request: NextRequest) {
         previewKind,
         useOss
       });
-      const localResult: { previewKey: string; posterKey?: string } = previewKind === "office"
-        ? { previewKey: await createOfficePreview(stored) }
-        : previewKind === "image"
-          ? await createImagePreview(stored)
-          : await createVideoPreview(stored);
+      const localResult: { previewKey: string; posterKey?: string } = previewKind === "image"
+        ? await createImagePreview(stored)
+        : await createVideoPreview(stored);
       let result = localResult;
       if (useOss) {
         temporaryKeys.push(localResult.previewKey, ...(localResult.posterKey ? [localResult.posterKey] : []));
-        const previewExtension = previewKind === "video" ? ".mp4" : previewKind === "image" ? ".jpg" : ".pdf";
-        const previewMime = previewKind === "video" ? "video/mp4" : previewKind === "image" ? "image/jpeg" : "application/pdf";
+        const previewExtension = previewKind === "video" ? ".mp4" : ".jpg";
+        const previewMime = previewKind === "video" ? "video/mp4" : "image/jpeg";
         const previewKey = createResourceObjectKey("previews", file.id, `preview${previewExtension}`);
         await putResourceObjectFromPath(previewKey, resolveStorageKey(localResult.previewKey), previewMime);
         uploadedArtifacts.push(previewKey);

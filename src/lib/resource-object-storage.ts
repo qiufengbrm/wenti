@@ -50,7 +50,9 @@ export async function getResourceObjectMetadata(storageKey: string) {
   const headers = result.res.headers as OssHeaders;
   const size = Number(headerValue(headers, "content-length"));
   if (!Number.isSafeInteger(size) || size < 0) throw new Error("OSS 文件大小无效");
-  return { size };
+  const lastModifiedValue = headerValue(headers, "last-modified");
+  const lastModified = lastModifiedValue ? new Date(lastModifiedValue) : null;
+  return { size, lastModified: lastModified && !Number.isNaN(lastModified.getTime()) ? lastModified : null };
 }
 
 export async function getResourceObjectStream(storageKey: string, range?: { start: number; end: number }) {

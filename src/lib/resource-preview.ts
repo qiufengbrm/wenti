@@ -2,7 +2,7 @@
 import type { FileResource } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
-import { getResourceUploadForPreview, removeResourceStorageKeys, resourceFileExists } from "@/lib/resource-file-storage";
+import { getResourceFileMetadata, getResourceUploadForPreview, removeResourceStorageKeys, resourceFileExists } from "@/lib/resource-file-storage";
 import { createResourceObjectKey, isResourceObjectKey, putResourceObjectFromPath } from "@/lib/resource-object-storage";
 import {
   createImagePreview,
@@ -20,6 +20,7 @@ type PreviewArtifacts = {
 };
 
 const activeJobs = new Map<string, Promise<PreviewArtifacts>>();
+const OFFICE_PREVIEW_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 export async function ensurePreviewArtifacts(file: FileResource, options: { requirePoster?: boolean } = {}): Promise<PreviewArtifacts> {
   if (!file.storageKey) throw new Error("原文件不存在");
@@ -34,7 +35,13 @@ export async function ensurePreviewArtifacts(file: FileResource, options: { requ
   const previewExists = await resourceFileExists(file.previewKey);
   const posterExists = kind !== "video" || !options.requirePoster || await resourceFileExists(file.posterKey);
   if (file.previewKey && previewExists && posterExists) {
-    return { kind, previewKey: file.previewKey, posterKey: file.posterKey };
+    const expired = kind === "office" && await isPreviewExpired(file.previewKey);
+    if (!expired) return { kind, previewKey: file.previewKey, posterKey: file.posterKey };
+    await removeResourceStorageKeys([file.previewKey, file.posterKey]);
+    await prisma.fileResource.update({
+      where: { id: file.id },
+      data: { previewKey: null, posterKey: null, previewStatus: "NONE" }
+    });
   }
 
   const existingJob = activeJobs.get(file.id);
@@ -47,6 +54,11 @@ export async function ensurePreviewArtifacts(file: FileResource, options: { requ
   } finally {
     activeJobs.delete(file.id);
   }
+}
+
+async function isPreviewExpired(previewKey: string) {
+  const { lastModified } = await getResourceFileMetadata(previewKey);
+  return Boolean(lastModified && Date.now() - lastModified.getTime() >= OFFICE_PREVIEW_TTL_MS);
 }
 
 async function regeneratePreview(file: FileResource, kind: "image" | "video" | "office") {

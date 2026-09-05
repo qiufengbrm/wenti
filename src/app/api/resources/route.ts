@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
           updatedAt: file.updatedAt.toISOString(),
           previewStatus: file.previewStatus,
           previewKind,
-          canPreview: previewKind === "pdf" || (["image", "video", "office"].includes(previewKind) && file.previewStatus === "READY"),
+          canPreview: previewKind === "pdf" || previewKind === "office" || (["image", "video"].includes(previewKind) && file.previewStatus === "READY"),
           hasPoster: Boolean(file.posterKey),
           isLegacyLink: !file.storageKey && Boolean(file.fileUrl),
           projectId: file.project?.id ?? null,
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
       updatedAt: file.updatedAt.toISOString(),
       previewStatus: file.previewStatus,
       previewKind,
-      canPreview: previewKind === "pdf" || (["image", "video", "office"].includes(previewKind) && file.previewStatus === "READY"),
+      canPreview: previewKind === "pdf" || previewKind === "office" || (["image", "video"].includes(previewKind) && file.previewStatus === "READY"),
       hasPoster: Boolean(file.posterKey),
       isLegacyLink: !file.storageKey && Boolean(file.fileUrl)
     });

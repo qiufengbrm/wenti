@@ -18,7 +18,7 @@ export async function getResourceFileMetadata(storageKey: string) {
   if (isResourceObjectKey(storageKey)) return getResourceObjectMetadata(storageKey);
   const details = await stat(resolveStorageKey(storageKey));
   if (!details.isFile()) throw new Error("资料文件不存在");
-  return { size: details.size };
+  return { size: details.size, lastModified: details.mtime };
 }
 
 export async function getResourceFile(storageKey: string, range?: { start: number; end: number }) {
