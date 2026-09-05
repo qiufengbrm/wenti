@@ -1,6 +1,6 @@
 /** 项目导读：资料文件落盘逻辑：同时照顾数据库记录与磁盘路径；两边必须对得上账，不能一个说东一个说西。 */
 import { createReadStream, createWriteStream } from "node:fs";
-import { access, mkdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { access, mkdir, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
@@ -92,9 +92,12 @@ export async function createOfficePreview(upload: StoredUpload) {
   const previewName = `${randomUUID()}.pdf`;
   const previewKey = path.posix.join("previews", previewName);
   const previewPath = resolveStorageKey(previewKey);
-  const generatedPath = path.join(path.dirname(previewPath), `${path.basename(upload.absolutePath, path.extname(upload.absolutePath))}.pdf`);
+  const jobPath = path.join(root, "temp", randomUUID());
+  const outputDir = path.join(jobPath, "output");
+  const generatedPath = path.join(outputDir, `${path.basename(upload.absolutePath, path.extname(upload.absolutePath))}.pdf`);
   // 每次转换独享 LibreOffice 配置目录，免得并发任务互相串门、顺手锁个文件。
-  const profilePath = path.join(root, "temp", randomUUID());
+  const profilePath = path.join(jobPath, "profile");
+  await mkdir(outputDir, { recursive: true });
   await mkdir(profilePath, { recursive: true });
 
   try {
@@ -107,7 +110,7 @@ export async function createOfficePreview(upload: StoredUpload) {
         "--convert-to",
         "pdf",
         "--outdir",
-        path.dirname(previewPath),
+        outputDir,
         upload.absolutePath
       ],
       {
@@ -116,15 +119,25 @@ export async function createOfficePreview(upload: StoredUpload) {
         env: { ...process.env, FONTCONFIG_FILE: fontConfigPath }
       }
     );
-    if (generatedPath !== previewPath) {
-      await access(generatedPath, constants.R_OK);
-      await rename(generatedPath, previewPath);
-    }
+    const outputPath = await findOfficePreviewOutput(outputDir, generatedPath);
+    await rename(outputPath, previewPath);
     await access(previewPath, constants.R_OK);
     return previewKey;
   } finally {
-    await rm(profilePath, { recursive: true, force: true });
+    await rm(jobPath, { recursive: true, force: true });
   }
+}
+
+async function findOfficePreviewOutput(outputDir: string, generatedPath: string) {
+  try {
+    await access(generatedPath, constants.R_OK);
+    return generatedPath;
+  } catch {}
+
+  const entries = await readdir(outputDir, { withFileTypes: true });
+  const pdfs = entries.filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".pdf"));
+  if (pdfs.length === 1) return path.join(outputDir, pdfs[0].name);
+  throw new Error(`Office 预览 PDF 未生成，输出目录包含 ${pdfs.length} 个 PDF`);
 }
 
 export interface MediaPreview {
