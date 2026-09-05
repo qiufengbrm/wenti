@@ -681,7 +681,7 @@ sudo crontab -u wenti -e
 在 crontab 中加入：
 
 ```cron
-20 3 * * * cd /opt/wenti && /usr/bin/node --env-file=.env.production scripts/cleanup-storage.mjs >> /var/log/wenti-storage-cleanup.log 2>&1
+20 3 * * * cd /opt/wenti && /usr/bin/node --env-file=.env.production scripts/cleanup-storage.mjs
 ```
 
 如需调整保存时间，可在 `.env.production` 设置 `OFFICE_PREVIEW_RETENTION_DAYS`，默认值为 `7`。
