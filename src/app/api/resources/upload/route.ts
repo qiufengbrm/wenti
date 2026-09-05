@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
   const requiresConversion = previewKind === "office" || previewKind === "image" || previewKind === "video";
   const initialStatus = previewKind === "pdf" ? "READY" : requiresConversion ? "PENDING" : "NONE";
   let file;
+  let previewErrorMessage = "";
   try {
     file = await prisma.fileResource.create({
       data: {
@@ -99,6 +100,11 @@ export async function POST(request: NextRequest) {
   if (requiresConversion) {
     const uploadedArtifacts: string[] = [];
     try {
+      console.info("[resources/upload] preview generation started", {
+        fileName: name,
+        previewKind,
+        useOss
+      });
       const localResult: { previewKey: string; posterKey?: string } = previewKind === "office"
         ? { previewKey: await createOfficePreview(stored) }
         : previewKind === "image"
@@ -125,6 +131,7 @@ export async function POST(request: NextRequest) {
         data: { previewKey: result.previewKey, posterKey: result.posterKey ?? null, previewStatus: "READY" }
       });
     } catch (error) {
+      previewErrorMessage = error instanceof Error ? error.message : "未知错误";
       console.error("[resources/upload] preview generation failed", {
         fileId: file.id,
         fileName: file.fileName,
@@ -138,7 +145,10 @@ export async function POST(request: NextRequest) {
 
   await removeStoredKeys(temporaryKeys);
 
-  return NextResponse.json({ data: file, message: file.previewStatus === "FAILED" ? "上传成功，但预览生成失败" : "上传成功" }, { status: 201 });
+  return NextResponse.json({
+    data: file,
+    message: file.previewStatus === "FAILED" ? `上传成功，但预览生成失败：${previewErrorMessage || "请查看服务器日志"}` : "上传成功"
+  }, { status: 201 });
 }
 
 function safeExtension(fileName: string) {
