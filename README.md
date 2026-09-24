@@ -6,7 +6,7 @@
 
 - 志愿者资料与账号管理
 - 志愿时长申报、审核与 Excel 导出
-- 课表导入、查看与空闲时间查询
+- Excel 课表导入、华师本科智慧教务同步、空闲时间查询与逐教学周自动排班
 - 教程发布、消息通知与特长词云
 - 活动资料、文件夹及文件管理
 - 桌面端、移动端和深色模式适配
@@ -26,6 +26,8 @@ npm run dev
 ```
 
 打开 [http://localhost:3000](http://localhost:3000)。运行前请先在 `.env` 中配置 MySQL 与文件存储路径。
+
+自动排班还需 Python 3.12、`pip install -r solver/requirements.txt`，并在 `.env` 中设置 `SESSION_SECRET`、`CCNU_SESSION_KEY`、`CRON_SECRET` 和 `ORTOOLS_PYTHON`。详见[课表同步与排班本地运行说明](./docs/ccnu-roster.md)。
 
 ## 文档
 

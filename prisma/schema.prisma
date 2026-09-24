@@ -128,6 +128,9 @@ model User {
   deletedAt               DateTime?
   volunteerProfile        VolunteerProfile?
   volunteerSchedule       VolunteerSchedule?
+  campusSession           CampusSession?
+  rosterCandidates        RosterCandidate[]
+  rosterAssignments       RosterAssignment[]
   notices                 Notice[]           @relation("NoticeCreator")
   noticeReads             NoticeRead[]
   tasks                   Task[]             @relation("TaskCreator")
@@ -172,9 +175,91 @@ model VolunteerSchedule {
   department     String?
   sourceFileName String
   fileSize       Int
+  source         String           @default("EXCEL") @db.VarChar(16)
+  syncedAt       DateTime?
   courses        ScheduleCourse[]
   uploadedAt     DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+}
+
+model CampusSession {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  encryptedCookies String   @db.Text
+  expiresAt        DateTime
+  status           String   @default("ACTIVE") @db.VarChar(20)
+  lastSyncedAt     DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model AcademicTerm {
+  id         String           @id @default(cuid())
+  code       String           @unique @db.VarChar(32)
+  startDate  DateTime         @db.Date
+  weekCount  Int
+  scheduleWeeks String?        @db.Text
+  templates  RosterTemplate[]
+  candidates RosterCandidate[]
+  roster     Roster?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+}
+
+model RosterTemplate {
+  id            String       @id @default(cuid())
+  termId        String
+  term          AcademicTerm @relation(fields: [termId], references: [id], onDelete: Cascade)
+  dayOfWeek     Int
+  startTime     String       @db.VarChar(5)
+  endTime       String       @db.VarChar(5)
+  location      String
+  requiredCount Int
+}
+
+model RosterCandidate {
+  termId String
+  userId String
+  term   AcademicTerm @relation(fields: [termId], references: [id], onDelete: Cascade)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([termId, userId])
+}
+
+model Roster {
+  id          String        @id @default(cuid())
+  termId      String        @unique
+  term        AcademicTerm  @relation(fields: [termId], references: [id], onDelete: Cascade)
+  status      String        @default("DRAFT") @db.VarChar(16)
+  publishedAt DateTime?
+  shifts      RosterShift[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model RosterShift {
+  id            String             @id @default(cuid())
+  rosterId      String
+  roster        Roster             @relation(fields: [rosterId], references: [id], onDelete: Cascade)
+  week          Int
+  date          DateTime           @db.Date
+  startTime     String             @db.VarChar(5)
+  endTime       String             @db.VarChar(5)
+  location      String
+  requiredCount Int
+  assignments   RosterAssignment[]
+
+  @@index([rosterId, date])
+}
+
+model RosterAssignment {
+  shiftId String
+  userId  String
+  shift   RosterShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([shiftId, userId])
 }
 
 model ScheduleCourse {

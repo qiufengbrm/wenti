@@ -4,13 +4,12 @@
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { clearLoginSession } from "@/components/auth/SessionGuard";
-import { authCookieName } from "@/lib/auth-constants";
 
 export function LogoutButton({ loginHref = "/login" }: { loginHref?: string }) {
   const router = useRouter();
 
-  function logout() {
-    document.cookie = `${authCookieName}=; path=/; max-age=0`;
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
     clearLoginSession();
     router.push(loginHref);
     router.refresh();

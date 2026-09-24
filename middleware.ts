@@ -3,16 +3,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { authCookieName } from "@/lib/auth-constants";
 import { canAccessAdmin, canAccessSuperAdminOnly, getDefaultRouteByRole } from "@/lib/permissions";
 import { decodeSession } from "@/lib/session";
-import type { Role } from "@/types/role";
 
 const protectedPrefixes = ["/dashboard", "/admin", "/volunteer"];
 const superAdminOnlyPrefixes = ["/admin/accounts", "/admin/settings"];
 const publicLoginPaths = ["/login", "/admin/login", "/volunteer/login", "/superadmin/login"];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionValue = request.cookies.get(authCookieName)?.value;
-  const role = getRoleFromSessionValue(sessionValue);
+  const role = (await decodeSession(sessionValue))?.role;
 
   if (publicLoginPaths.includes(pathname)) {
     if (role && pathname !== "/login") {
@@ -50,10 +49,6 @@ export function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
-}
-
-function getRoleFromSessionValue(sessionValue?: string): Role | undefined {
-  return decodeSession(sessionValue)?.role;
 }
 
 export const config = {

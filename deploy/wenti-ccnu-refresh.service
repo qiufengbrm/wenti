@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh CCNU schedules for wenti
+After=network-online.target wenti.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=wenti
+WorkingDirectory=/opt/wenti
+EnvironmentFile=/opt/wenti/.env.production
+ExecStart=/usr/bin/node /opt/wenti/scripts/ccnu-refresh.mjs

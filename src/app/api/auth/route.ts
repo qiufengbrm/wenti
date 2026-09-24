@@ -5,7 +5,8 @@ import { prisma } from "@/lib/db";
 import { verifyPassword } from "@/lib/password";
 import { getDefaultRouteByRole } from "@/lib/permissions";
 import { toAppRole } from "@/lib/role-map";
-import { encodeSession } from "@/lib/session";
+import { encodeSession, sessionMaxAge } from "@/lib/session";
+import { requireSameOrigin } from "@/lib/request-security";
 import type { Role } from "@/types/role";
 
 export async function GET() {
@@ -20,6 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const originError = requireSameOrigin(request);
+  if (originError) return originError;
   const payload = (await request.json().catch(() => ({}))) as {
     username?: string;
     password?: string;
@@ -62,9 +65,10 @@ export async function POST(request: NextRequest) {
     redirectTo: getDefaultRouteByRole(role)
   });
 
-  response.cookies.set(authCookieName, encodeSession({ id: user.id, username: user.username, role }), {
-    httpOnly: false,
-    maxAge: payload.rememberMe ? 60 * 60 * 24 * 7 : undefined,
+  response.cookies.set(authCookieName, await encodeSession({ id: user.id, username: user.username, role }), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: payload.rememberMe ? sessionMaxAge : undefined,
     path: "/",
     sameSite: "lax"
   });

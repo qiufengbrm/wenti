@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily CCNU schedule refresh for wenti
+
+[Timer]
+OnCalendar=*-*-* 04:00:00 Asia/Shanghai
+Persistent=true
+Unit=wenti-ccnu-refresh.service
+
+[Install]
+WantedBy=timers.target

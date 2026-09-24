@@ -7,6 +7,7 @@ const volunteerItems: NavItem[] = [
   { label: "首页", href: "/volunteer", icon: "gauge" },
   { label: "申请志愿时长", href: "/volunteer/hours/apply", icon: "filePlus" },
   { label: "我的课表", href: "/volunteer/schedule", icon: "calendar" },
+  { label: "团队排班", href: "/volunteer/roster", icon: "calendar" },
   { label: "特长词云", href: "/volunteer/skills", icon: "sparkles" },
   { label: "任务广场", href: "/volunteer/tasks", icon: "clipboardList", hidden: true },
   { label: "我的志愿时长", href: "/volunteer/hours", icon: "history", hidden: true, exact: true },
