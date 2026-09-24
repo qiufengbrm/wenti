@@ -5,6 +5,7 @@ import { DataTable } from "@/components/ui/DataTable";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AccountCreateForm } from "@/components/accounts/AccountCreateForm";
 import { AccountDeleteButton } from "@/components/accounts/AccountDeleteButton";
+import { AccountResetPasswordButton } from "@/components/accounts/AccountResetPasswordButton";
 import { requireSuperAdmin } from "@/lib/auth";
 import { getAccounts } from "@/lib/data";
 import { roleLabels, type Role } from "@/types/role";
@@ -52,9 +53,7 @@ export default async function AdminAccountsPage() {
               header: "操作",
               render: (row) => (
                 <div className="flex flex-wrap gap-2">
-                  <button className="h-8 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50" type="button">
-                    重置密码
-                  </button>
+                  <AccountResetPasswordButton disabled={row.role === "super_admin"} id={String(row.id)} name={String(row.name)} username={String(row.username)} />
                   <button className="h-8 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50" type="button">
                     {row.status === "disabled" ? "启用" : "禁用"}
                   </button>
