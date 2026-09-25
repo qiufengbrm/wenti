@@ -10,7 +10,7 @@ import type { CurrentUser } from "@/types/user";
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const cookieStore = await cookies();
-  const session = decodeSession(cookieStore.get(authCookieName)?.value);
+  const session = await decodeSession(cookieStore.get(authCookieName)?.value);
 
   if (!session) {
     return null;
@@ -20,7 +20,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     where: { id: session.id }
   });
 
-  if (!user || user.status !== "ACTIVE") {
+  if (!user || user.status !== "ACTIVE" || user.deletedAt || user.username !== session.username || toAppRole(user.role) !== session.role) {
     return null;
   }
 

@@ -2,7 +2,7 @@
 
 面向文艺体育中心的志愿服务管理网站，包含超级管理员、部门负责人和志愿者三类用户。系统基于 Next.js App Router、TypeScript、Tailwind CSS、Prisma 与 MySQL 构建，支持志愿者资料、志愿时长审核与导出、课表录入与空闲查询、特长词云、教程、消息和活动资料库等功能，并完整适配桌面端、深色模式和手机端。
 
-> 部署前请先阅读本文的“生产环境安全检查”。当前登录会话实现适合内网测试，但在直接开放到公网前必须加固。
+> 部署前请先阅读本文的“生产环境安全检查”，并配置会话签名和校内会话加密密钥。
 
 需要交给另一台服务器上的 AI 或运维人员快速部署时，请直接使用独立的 [README_DEPLOY.md](./README_DEPLOY.md)。该文档包含分阶段命令、禁止事项、迁移/新建两种路径、systemd、Nginx、HTTPS、验收和回滚流程。
 
@@ -281,7 +281,7 @@ OSS_ACCESS_KEY_SECRET="RAM_USER_ACCESS_KEY_SECRET"
 | `OSS_CREDENTIAL_TYPE` | 否 | 当前支持 `access_key` |
 | `OSS_ACCESS_KEY_ID` / `OSS_ACCESS_KEY_SECRET` | 否 | 最小权限 RAM 程序用户密钥，仅保存在服务器 |
 
-`.env.example` 中的 `NEXTAUTH_SECRET` 和 `NEXTAUTH_URL` 目前未被登录代码使用，不能依赖它们保护当前会话。
+登录会话使用 `SESSION_SECRET` 签名；`NEXTAUTH_SECRET` 和 `NEXTAUTH_URL` 仍未被自定义登录代码使用。校内会话使用 `CCNU_SESSION_KEY` 加密，定时刷新入口使用 `CRON_SECRET` 验证。详见 [课表同步与排班说明](./docs/ccnu-roster.md)。
 
 ## 首次部署
 
@@ -719,8 +719,7 @@ rsync -a --delete /var/lib/wenti-storage/ /backup/wenti-storage/
 
 ### 上公网前必须完成
 
-- **加固会话机制。** 当前 `src/lib/session.ts` 只对会话 JSON 做 Base64URL 编码，没有签名或加密；Cookie 也设置为 `httpOnly: false`。攻击者可能伪造角色 Cookie。公开部署前必须改为有服务端密钥签名的会话，并启用 `HttpOnly`、`Secure` 和合适的过期策略。
-- `.env.example` 中的 `NEXTAUTH_SECRET` 当前没有接入上述会话实现，单纯填写该变量不会解决问题。
+- 配置随机且独立的 `SESSION_SECRET`、`CCNU_SESSION_KEY` 和 `CRON_SECRET`，并在发布时使用 HTTPS。旧的无签名会话会失效，成员需要重新登录。
 - 删除或禁用测试账号，修改所有初始密码。
 - 只通过 HTTPS 提供服务。
 - 限制 MySQL、3000 端口和资料库存储目录的访问权限。
@@ -730,7 +729,7 @@ rsync -a --delete /var/lib/wenti-storage/ /backup/wenti-storage/
 ### 建议完成
 
 - 增加登录限流、失败次数限制和安全审计。
-- 增加 CSRF 防护与更严格的安全响应头。
+- 对其他历史写入接口继续补充 CSRF 防护与更严格的安全响应头；课表与排班写入接口已校验请求来源。
 - 对上传文件做病毒扫描和内容类型复核。
 - 配置错误监控、磁盘容量监控和数据库慢查询监控。
 - 为 FFmpeg/LibreOffice 转换任务设置独立队列，避免高并发耗尽 Web 进程资源。

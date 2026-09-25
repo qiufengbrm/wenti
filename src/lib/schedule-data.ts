@@ -56,6 +56,8 @@ function serializeSchedule(schedule: {
   department: string | null;
   sourceFileName: string;
   fileSize: number;
+  source: string;
+  syncedAt: Date | null;
   uploadedAt: Date;
   courses: Array<{
     id: string;
@@ -76,6 +78,8 @@ function serializeSchedule(schedule: {
     department: schedule.department ?? "",
     sourceFileName: schedule.sourceFileName,
     fileSize: schedule.fileSize,
+    source: schedule.source,
+    syncedAt: schedule.syncedAt?.toISOString() ?? null,
     uploadedAt: schedule.uploadedAt.toISOString(),
     courses: schedule.courses.map((course) => ({
       ...course,

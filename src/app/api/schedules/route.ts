@@ -4,12 +4,15 @@ import { requireApiUser } from "@/app/api/_utils";
 import { prisma } from "@/lib/db";
 import { isVolunteer } from "@/lib/permissions";
 import { parseScheduleWorkbook } from "@/lib/schedule-parser";
+import { requireSameOrigin } from "@/lib/request-security";
 
 export const runtime = "nodejs";
 
 const maxFileSize = 5 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
+  const originError = requireSameOrigin(request);
+  if (originError) return originError;
   const auth = await requireApiUser();
   if (auth.response || !auth.user) return auth.response;
   if (!isVolunteer(auth.user.role)) return NextResponse.json({ message: "只有志愿者可以录入自己的课表" }, { status: 403 });
@@ -42,6 +45,7 @@ export async function POST(request: NextRequest) {
           department: parsed.department || null,
           sourceFileName: parsed.sourceFileName,
           fileSize: parsed.fileSize,
+          source: "EXCEL",
           courses: {
             create: parsed.courses.map((course) => ({
               dayOfWeek: course.dayOfWeek,

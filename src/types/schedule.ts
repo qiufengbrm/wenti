@@ -18,6 +18,8 @@ export type ScheduleData = {
   department: string;
   sourceFileName: string;
   fileSize: number;
+  source?: string;
+  syncedAt?: string | null;
   uploadedAt?: string;
   courses: ScheduleCourseData[];
 };

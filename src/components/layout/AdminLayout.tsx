@@ -9,6 +9,7 @@ const baseItems: NavItem[] = [
   { label: "志愿者管理", href: "/admin/volunteers", icon: "users" },
   { label: "特长词云", href: "/admin/skills", icon: "sparkles" },
   { label: "课表管理", href: "/admin/schedules", icon: "calendar" },
+  { label: "自动排班", href: "/admin/roster", icon: "calendar" },
   { label: "任务管理", href: "/admin/tasks", icon: "clipboardList", hidden: true },
   { label: "资料中心", href: "/admin/files", icon: "uploadCloud" },
   { label: "志愿时长管理", href: "/admin/hours", icon: "history" },
