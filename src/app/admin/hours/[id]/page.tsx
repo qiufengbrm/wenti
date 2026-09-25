@@ -7,13 +7,14 @@ import { Card, StatCard } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getAdminVolunteerHourDetail } from "@/lib/data";
 import { RejectApprovedHourButton } from "@/components/hours/RejectApprovedHourButton";
+import { VolunteerContributionHeatmap } from "@/components/hours/VolunteerContributionHeatmap";
 
 export default async function AdminVolunteerHoursPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const detail = await getAdminVolunteerHourDetail(id);
   if (!detail) notFound();
 
-  const { volunteer, summary, records } = detail;
+  const { volunteer, summary, contributionCalendar, records } = detail;
 
   return (
     <>
@@ -26,6 +27,11 @@ export default async function AdminVolunteerHoursPage({ params }: { params: Prom
       </div>
 
       <div className="grid gap-6">
+        <VolunteerContributionHeatmap
+          calendar={contributionCalendar}
+          description={`过去一年 ${volunteer.name} 已通过的志愿服务时长`}
+          title="个人志愿贡献"
+        />
         <Card className="p-0">
           <div className="border-b border-black/[0.06] px-5 py-4 sm:px-6">
             <h2 className="text-[17px] font-semibold text-[#1d1d1f]">活动与申报明细</h2>

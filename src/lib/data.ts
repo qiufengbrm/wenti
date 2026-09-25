@@ -597,19 +597,22 @@ export async function getAdminHourOverview() {
 }
 
 export async function getAdminVolunteerHourDetail(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      volunteerHours: {
-        include: { task: true, reviewedBy: true },
-        orderBy: { createdAt: "desc" }
-      },
-      taskSubmissions: {
-        include: { task: true, reviewedBy: true },
-        orderBy: { createdAt: "desc" }
+  const [user, contributionCalendar] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        volunteerHours: {
+          include: { task: true, reviewedBy: true },
+          orderBy: { createdAt: "desc" }
+        },
+        taskSubmissions: {
+          include: { task: true, reviewedBy: true },
+          orderBy: { createdAt: "desc" }
+        }
       }
-    }
-  });
+    }),
+    getVolunteerContributionCalendar(userId)
+  ]);
 
   if (!user || user.role !== "VOLUNTEER") return null;
 
@@ -636,6 +639,7 @@ export async function getAdminVolunteerHourDetail(userId: string) {
       pendingCount: directHours.filter((hour) => hour.status === "PENDING").length + user.taskSubmissions.filter((submission) => submission.status === "PENDING").length,
       rejectedCount: directHours.filter((hour) => hour.status === "REJECTED").length + user.taskSubmissions.filter((submission) => submission.status === "REJECTED").length
     },
+    contributionCalendar,
     availableMonths,
     records: [
       ...directHours.map((hour) => ({
@@ -964,8 +968,8 @@ export async function getPendingHourReviewItems() {
 }
 
 export async function getAdminOverview() {
-  const [volunteerCount, files, pendingHourApplications, tutorials, tasks] = await Promise.all([
-    prisma.user.count({ where: { role: "VOLUNTEER", deletedAt: null } }),
+  const [contributionCalendar, files, pendingHourApplications, tutorials, tasks] = await Promise.all([
+    getVolunteerContributionCalendar(),
     getFiles(),
     getPendingHourReviewItems(),
     getTutorials(),
@@ -973,12 +977,79 @@ export async function getAdminOverview() {
   ]);
 
   return {
-    volunteerCount,
+    contributionCalendar,
     files,
     pendingHourApplications,
     tutorials,
     tasks
   };
+}
+
+async function getVolunteerContributionCalendar(userId?: string) {
+  const approvedHours = await prisma.volunteerHour.findMany({
+    where: { status: "APPROVED", user: { deletedAt: null }, ...(userId ? { userId } : {}) },
+    select: {
+      userId: true,
+      hours: true,
+      serviceStartAt: true,
+      createdAt: true,
+      task: { select: { startTime: true } }
+    }
+  });
+  const todayKey = shanghaiDateKey(new Date());
+  const today = new Date(`${todayKey}T00:00:00Z`);
+  const start = new Date(today);
+  start.setUTCDate(start.getUTCDate() - start.getUTCDay() - 52 * 7);
+  const totals = new Map<string, { hours: number; users: Set<string>; recordCount: number }>();
+
+  for (const record of approvedHours) {
+    const date = shanghaiDateKey(record.serviceStartAt ?? record.task?.startTime ?? record.createdAt);
+    if (date < dateKey(start) || date > todayKey) continue;
+    const current = totals.get(date) ?? { hours: 0, users: new Set<string>(), recordCount: 0 };
+    current.hours += record.hours;
+    current.users.add(record.userId);
+    current.recordCount += 1;
+    totals.set(date, current);
+  }
+
+  const days = Array.from({ length: 53 * 7 }, (_, index) => {
+    const date = new Date(start);
+    date.setUTCDate(start.getUTCDate() + index);
+    const key = dateKey(date);
+    const contribution = totals.get(key);
+    return {
+      date: key,
+      hours: contribution ? sumHours([contribution.hours]) : 0,
+      volunteerCount: contribution?.users.size ?? 0,
+      recordCount: contribution?.recordCount ?? 0,
+      isFuture: key > todayKey
+    };
+  });
+  const visibleDays = days.filter((day) => day.date <= todayKey);
+  const peak = visibleDays.reduce<(typeof visibleDays)[number] | null>((current, day) => !current || day.hours > current.hours ? day : current, null);
+
+  return {
+    days,
+    totalHours: sumHours(visibleDays.map((day) => day.hours)),
+    activeDays: visibleDays.filter((day) => day.hours > 0).length,
+    peakHours: peak?.hours ?? 0,
+    peakDate: peak && peak.hours > 0 ? peak.date : null
+  };
+}
+
+function shanghaiDateKey(value: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(value);
+  const read = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value;
+  return `${read("year")}-${read("month")}-${read("day")}`;
+}
+
+function dateKey(value: Date) {
+  return value.toISOString().slice(0, 10);
 }
 
 function formatTask(task: {

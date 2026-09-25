@@ -1,6 +1,7 @@
 /** 项目导读：页面入口 admin：负责取数和组装界面，重活尽量交给组件，别让页面一人包办全村席面。 */
-import { Card, StatCard } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 import { DataTable } from "@/components/ui/DataTable";
+import { VolunteerContributionHeatmap } from "@/components/hours/VolunteerContributionHeatmap";
 import { VolunteerHourReviewQueue } from "@/components/hours/VolunteerHourReviewQueue";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireAdmin } from "@/lib/auth";
@@ -9,17 +10,13 @@ import { isSuperAdmin } from "@/lib/permissions";
 
 export default async function AdminHomePage() {
   const user = await requireAdmin();
-  const { volunteerCount, files, pendingHourApplications, tutorials, tasks } = await getAdminOverview();
+  const { contributionCalendar, files, pendingHourApplications, tutorials, tasks } = await getAdminOverview();
   const showSystemOverview = isSuperAdmin(user.role);
 
   return (
     <>
       <PageHeader description="查看文艺体育中心核心数据和近期动态。" title="管理员首页" />
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
-        <StatCard hint="数据库统计" href="/admin/volunteers" label="志愿者总数" value={volunteerCount} />
-        <StatCard hint={files[0]?.title} href="/admin/files" label="最近上传资料" value={files.length} />
-        <StatCard hint="志愿者自主申报" href="/admin/tasks/hours/review" label="待审核志愿时长" value={pendingHourApplications.length} />
-      </div>
+      <VolunteerContributionHeatmap calendar={contributionCalendar} />
       <div className="mt-6">
         <VolunteerHourReviewQueue initialItems={pendingHourApplications} title="审核志愿时长" />
       </div>
