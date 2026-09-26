@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": archiveContentDisposition(result.fileName),
+        "X-File-Source-Size": String(result.sourceSize),
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff"
       }

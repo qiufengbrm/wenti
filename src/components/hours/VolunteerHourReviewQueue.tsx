@@ -7,6 +7,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 export interface HourReviewItem {
   id: string;
@@ -107,7 +108,7 @@ export function VolunteerHourReviewQueue({ initialItems, title = "待审核申�
             <div className="grid gap-4 px-4 py-4 lg:grid-cols-[24px_minmax(0,1fr)_auto] lg:items-center" key={item.id}>
               <input aria-label={`选择 ${item.user} 的申请`} checked={selected.has(item.id)} className="size-4 rounded border-black/20" onChange={() => toggle(item.id)} type="checkbox" />
               <div className="min-w-0"><div className="flex flex-wrap items-center gap-x-3 gap-y-1"><span className="font-semibold text-[#1d1d1f]">{item.user}</span><span className="text-xs text-[#86868b]">{item.studentId}</span><span className="rounded-[9px] bg-[#34c759]/12 px-3 py-1 text-base font-bold tracking-tight text-[#1f7a35] shadow-[inset_0_0_0_1px_rgba(52,199,89,.14)]">{item.hours} 小时</span><span className="rounded-full bg-[#0071e3]/[0.08] px-2 py-0.5 text-xs font-medium text-[#0066cc]">{item.sourceLabel}</span></div><p className="mt-2 line-clamp-2 text-sm leading-6 text-[#3a3a3c]">{item.workContent}</p><div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#86868b]"><span>{item.serviceTime}</span><ProofHoverPreview item={item} /><span>提交于 {item.submittedAt}</span></div></div>
-              <div className="flex flex-wrap gap-2 lg:flex-nowrap lg:justify-end"><Button className="whitespace-nowrap" href={item.detailHref} variant="secondary">详细页面</Button><Button className="whitespace-nowrap" disabled={Boolean(pending)} onClick={() => review(item.id, true)}>{pending === item.id ? "处理中..." : "通过"}</Button><Button className="whitespace-nowrap" disabled={Boolean(pending)} onClick={() => review(item.id, false)} variant="ghost">驳回</Button></div>
+              <div className="flex flex-wrap gap-2 lg:flex-nowrap lg:justify-end">{item.proofFileName ? <MobileFileShareButton fileName={item.proofFileName} url={`/api/hour-proofs/${item.source}/${item.id}/download`} /> : null}<Button className="whitespace-nowrap" href={item.detailHref} variant="secondary">详细页面</Button><Button className="whitespace-nowrap" disabled={Boolean(pending)} onClick={() => review(item.id, true)}>{pending === item.id ? "处理中..." : "通过"}</Button><Button className="whitespace-nowrap" disabled={Boolean(pending)} onClick={() => review(item.id, false)} variant="ghost">驳回</Button></div>
             </div>
           ))}</div>
         </> : <div className="px-6 py-12 text-center"><p className="text-sm font-medium text-[#515154]">暂无待审核申请</p><p className="mt-1.5 text-xs text-[#86868b]">志愿者提交新的时长申请后会显示在这里</p></div>}

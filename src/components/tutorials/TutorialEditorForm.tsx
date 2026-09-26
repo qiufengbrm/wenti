@@ -6,6 +6,7 @@ import { AlertTriangle, Bold, BookOpenCheck, FileText, ImagePlus, Italic, Loader
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 type TutorialInput = {
   id: string;
@@ -422,7 +423,7 @@ export function TutorialEditorForm({ tutorial }: { tutorial?: TutorialInput }) {
               <button aria-label="移除附件" className="rounded-lg p-1.5 text-[#86868b] hover:bg-[#ff3b30]/10 hover:text-[#d70015]" onClick={() => { setAttachment(null); setRemoveAttachment(true); if (fileInputRef.current) fileInputRef.current.value = ""; }} type="button"><X size={17} /></button>
             </div>
           ) : null}
-          {tutorial?.attachmentFileName && !removeAttachment && !attachment ? <a className="mt-3 inline-flex text-xs font-semibold text-[#0066cc] hover:underline" download href={`/api/tutorials/${tutorial.id}/attachment`}>下载当前附件</a> : null}
+          {tutorial?.attachmentFileName && !removeAttachment && !attachment ? <div className="mt-3 flex flex-wrap items-center gap-3"><a className="inline-flex text-xs font-semibold text-[#0066cc] hover:underline" download href={`/api/tutorials/${tutorial.id}/attachment`}>下载当前附件</a><MobileFileShareButton className="min-h-9 px-3" fileName={tutorial.attachmentFileName} url={`/api/tutorials/${tutorial.id}/attachment`} /></div> : null}
         </Card>
 
         <Card className="p-5">

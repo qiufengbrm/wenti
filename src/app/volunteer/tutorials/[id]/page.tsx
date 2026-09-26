@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { getTutorialDetail } from "@/lib/data";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 export default async function VolunteerTutorialDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -27,7 +28,7 @@ export default async function VolunteerTutorialDetailPage({ params }: { params: 
         </Card>
         {tutorial.attachmentFileName ? <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#0071e3]/10 text-[#0066cc]"><Paperclip size={19} /></span><div className="min-w-0"><p className="truncate text-sm font-semibold text-[#1d1d1f]">{tutorial.attachmentFileName}</p><p className="mt-1 text-xs text-[#86868b]">教程附件 · {formatFileSize(tutorial.attachmentFileSize)}</p></div></div>
-          <Button className="gap-2" download href={`/api/tutorials/${tutorial.id}/attachment`} variant="secondary"><Download size={16} />下载附件</Button>
+          <div className="flex flex-wrap gap-2"><Button className="gap-2" download href={`/api/tutorials/${tutorial.id}/attachment`} variant="secondary"><Download size={16} />下载附件</Button><MobileFileShareButton fileName={tutorial.attachmentFileName} url={`/api/tutorials/${tutorial.id}/attachment`} /></div>
         </Card> : null}
       </div>
     </>

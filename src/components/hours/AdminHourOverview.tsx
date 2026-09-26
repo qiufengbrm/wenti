@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { ChevronRight, Download, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 type VolunteerHourSummary = {
   id: string;
@@ -108,7 +109,9 @@ export function HourExport({ availableMonths }: { availableMonths: string[] }) {
           {availableMonths.length ? availableMonths.map((value) => <option key={value} value={value}>{formatMonth(value)}</option>) : <option value="">暂无可导出月份</option>}
         </select>
         <Button className="gap-2" disabled={!month} download href={month ? `/api/hours/export?month=${month}` : undefined} variant="secondary"><Download size={16} />导出该月 Excel</Button>
+        {month ? <MobileFileShareButton fileName={`志愿者时长汇总-${month}.xlsx`} url={`/api/hours/export?month=${month}`} /> : null}
         <Button className="gap-2" download href="/api/hours/export?scope=all"><Download size={16} />导出全部 Excel</Button>
+        <MobileFileShareButton fileName="志愿者时长汇总-全部.xlsx" url="/api/hours/export?scope=all" />
       </div>
     </Card>
   );

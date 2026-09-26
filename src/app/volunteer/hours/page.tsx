@@ -6,6 +6,7 @@ import { Card, StatCard } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireVolunteer } from "@/lib/auth";
 import { getAdminVolunteerHourDetail } from "@/lib/data";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 export default async function VolunteerHoursPage() {
   const user = await requireVolunteer();
@@ -54,7 +55,7 @@ export default async function VolunteerHoursPage() {
                   <div className="lg:col-span-2">
                     <p className="text-xs font-medium text-[#86868b]">辅助证明材料</p>
                     {record.proofFileName && record.proofHref
-                      ? <Button className="mt-2" download href={record.proofHref} variant="secondary">下载 {record.proofFileName}</Button>
+                      ? <div className="mt-2 flex flex-wrap gap-2"><Button download href={record.proofHref} variant="secondary">下载 {record.proofFileName}</Button><MobileFileShareButton fileName={record.proofFileName} url={record.proofHref} /></div>
                       : <p className="mt-1.5 text-sm text-[#515154]">未上传证明材料</p>}
                   </div>
                   {record.taskId ? <div className="lg:col-span-2"><Button href={`/volunteer/tasks/${record.taskId}`} variant="secondary">查看关联任务</Button></div> : null}

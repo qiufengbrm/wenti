@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 export default async function VolunteerHourReviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
@@ -19,7 +20,7 @@ export default async function VolunteerHourReviewDetailPage({ params }: { params
       <div className="mx-auto grid max-w-4xl gap-5">
         <Card className="p-5 sm:p-7">
           <div className="grid gap-5 sm:grid-cols-2"><Info label="申请人" value={`${item.user.name}（${item.user.studentId ?? "无学号"}）`} /><Info label="申请状态" value={statusLabel} /><Info label="服务日期" value={formatDate(item.serviceStartAt)} /><Info label="服务时间" value={formatClockRange(item.serviceStartClockTime, item.serviceEndClockTime)} /><Info label="申请志愿时长" value={`${item.hours} 小时`} /><Info label="提交时间" value={formatDateTime(item.createdAt)} /></div>
-          <div className="mt-6 grid gap-5"><TextInfo label="志愿服务内容" value={item.workContent ?? item.activityName} /><TextInfo label="备注" value={item.notes || "无"} /><div><p className="text-xs font-medium text-[#86868b]">辅助证明材料</p>{item.proofFileName ? <Button className="mt-2" href={`/api/hour-applications/${item.id}/proof`} variant="secondary">下载 {item.proofFileName}</Button> : <p className="mt-2 text-sm text-[#515154]">未上传证明材料</p>}</div>{item.rejectReason ? <TextInfo label="驳回原因" value={item.rejectReason} /> : null}</div>
+          <div className="mt-6 grid gap-5"><TextInfo label="志愿服务内容" value={item.workContent ?? item.activityName} /><TextInfo label="备注" value={item.notes || "无"} /><div><p className="text-xs font-medium text-[#86868b]">辅助证明材料</p>{item.proofFileName ? <div className="mt-2 flex flex-wrap gap-2"><Button href={`/api/hour-applications/${item.id}/proof`} variant="secondary">下载 {item.proofFileName}</Button><MobileFileShareButton fileName={item.proofFileName} url={`/api/hour-applications/${item.id}/proof`} /></div> : <p className="mt-2 text-sm text-[#515154]">未上传证明材料</p>}</div>{item.rejectReason ? <TextInfo label="驳回原因" value={item.rejectReason} /> : null}</div>
         </Card>
         {item.status === "PENDING" ? <Card className="p-5"><HourReviewActions id={item.id} /></Card> : <div className="flex justify-end"><Button href="/admin/tasks/hours/review" variant="secondary">返回审核列表</Button></div>}
       </div>

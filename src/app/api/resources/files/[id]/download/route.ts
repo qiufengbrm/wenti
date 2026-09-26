@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { requireApiUser } from "@/app/api/_utils";
 import { getAccessibleFile } from "@/lib/resource-drive";
 import { getResourceFile } from "@/lib/resource-file-storage";
-import { createSignedResourceDownloadUrl, isResourceObjectKey } from "@/lib/resource-object-storage";
+import { createSignedResourceDownloadUrl, getResourceObjectMetadata, getResourceObjectStream, isResourceObjectKey, isResourceObjectStorageEnabled } from "@/lib/resource-object-storage";
 
 export const runtime = "nodejs";
 
@@ -19,6 +19,28 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     if (isResourceObjectKey(file.storageKey)) {
+      if (!isResourceObjectStorageEnabled()) {
+        return NextResponse.json(
+          { message: "文件存储服务未配置，暂时无法读取该文件" },
+          { status: 503 }
+        );
+      }
+      // 手机分享必须由同源鉴权接口返回文件流；普通下载仍保留原有 OSS 签名直链，避免改变既有性能。
+      if (request.nextUrl.searchParams.get("share") === "1") {
+        const [metadata, stored] = await Promise.all([
+          getResourceObjectMetadata(file.storageKey),
+          getResourceObjectStream(file.storageKey)
+        ]);
+        return new Response(stored.stream as never, {
+          headers: {
+            "Content-Type": file.fileType || "application/octet-stream",
+            "Content-Length": String(metadata.size),
+            "Content-Disposition": contentDisposition("attachment", file.fileName ?? file.title),
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store"
+          }
+        });
+      }
       const url = await createSignedResourceDownloadUrl(file.storageKey, file.fileName ?? file.title);
       const response = NextResponse.redirect(url, 307);
       response.headers.set("Cache-Control", "private, no-store");

@@ -83,6 +83,7 @@ export async function createResourceArchive(user: CurrentUser, selections: Resou
 
   const output = new PassThrough();
   const archive = archiver("zip", { zlib: { level: 6 }, forceZip64: true });
+  let sourceSize = 0;
   archive.on("warning", (error) => {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") output.destroy(error);
   });
@@ -93,6 +94,7 @@ export async function createResourceArchive(user: CurrentUser, selections: Resou
     if (entry.directory) archive.append(Buffer.alloc(0), { name: entry.archivePath });
     else if (entry.storageKey) {
       const stored = await getResourceFile(entry.storageKey);
+      sourceSize += stored.size;
       archive.append(stored.stream as Readable, { name: entry.archivePath });
     }
   }
@@ -101,6 +103,7 @@ export async function createResourceArchive(user: CurrentUser, selections: Resou
   return {
     fileName: normalizeZipName(preferredName),
     fileCount: includedFiles.size,
+    sourceSize,
     stream: Readable.toWeb(output) as ReadableStream<Uint8Array>
   };
 }

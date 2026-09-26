@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 type Visibility = "ALL" | "ADMINS" | "VOLUNTEERS";
 type PreviewStatus = "NONE" | "PENDING" | "READY" | "FAILED";
@@ -471,6 +472,15 @@ export function ResourceDrive({ isAdmin = false }: { isAdmin?: boolean }) {
           <div className="grid grid-cols-2 items-center gap-2 border-b border-[#0071e3]/10 bg-[#0071e3]/[0.055] px-3 py-2.5 sm:flex sm:flex-wrap sm:px-4" role="toolbar" aria-label="批量操作">
             <span className="col-span-2 text-[13px] font-semibold text-[#0066cc] sm:mr-auto">已选择 {selectedItems.length} 项</span>
             <Button className="w-full sm:w-auto" onClick={() => downloadResourceItems(selectedItems)}><Download className="mr-1.5" size={15} />批量下载</Button>
+            <MobileFileShareButton
+              cacheKey={selectedItems.map(resourceKey).join(",")}
+              className="w-full"
+              fileName="资料批量下载.zip"
+              label="发送所选文件"
+              onDownloadFallback={() => downloadResourceItems(selectedItems)}
+              request={{ method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: resourceSelectionBody(selectedItems) }}
+              url="/api/resources/download"
+            />
             {isAdmin ? <Button className="w-full sm:w-auto" disabled={batchBusy} onClick={() => setBatchMoveOpen(true)} variant="secondary"><Move className="mr-1.5" size={15} />批量移动</Button> : null}
             {isAdmin ? <button className="inline-flex min-h-11 items-center justify-center rounded-[10px] px-3 text-[13px] font-semibold text-[#d70015] transition-colors hover:bg-[#ff3b30]/10 disabled:opacity-45 sm:min-h-9" disabled={batchBusy} onClick={() => deleteSelectedItems(selectedItems)} type="button"><Trash2 className="mr-1.5" size={15} />批量删除</button> : null}
             <Button className="col-span-2 w-full sm:w-auto" disabled={batchBusy} onClick={() => setSelectedKeys(new Set())} variant="ghost">取消选择</Button>
@@ -549,7 +559,7 @@ function GlobalFileSearchResults({ files }: { files: FileItem[] }) {
   return (
     <Card className="overflow-hidden p-0">
       <div className="flex items-center justify-between gap-3 border-b border-black/[0.07] px-4 py-3.5"><div><h2 className="text-sm font-semibold text-[#1d1d1f]">文件搜索结果</h2><p className="mt-0.5 text-xs text-[#86868b]">关键词匹配文件名，日期按上传时间筛选</p></div><span className="rounded-full bg-[#0071e3]/[0.08] px-2.5 py-1 text-xs font-semibold text-[#0066cc]">{files.length} 个文件</span></div>
-      {files.length ? <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="bg-black/[0.018] text-left text-xs font-medium text-[#6e6e73]"><tr><th className="px-4 py-3">文件名</th><th className="px-4 py-3">所属项目</th><th className="hidden px-4 py-3 md:table-cell">文件夹位置</th><th className="hidden px-4 py-3 sm:table-cell">上传时间</th><th className="hidden px-4 py-3 lg:table-cell">上传人</th></tr></thead><tbody className="divide-y divide-black/[0.06]">{files.map((file) => <tr className="transition-colors hover:bg-[#0071e3]/[0.035]" key={file.id}><td className="px-4 py-3"><button className="flex min-w-0 items-center gap-3 text-left" onClick={() => openResourceFile(file)} type="button"><HoverPreviewIcon file={file} /><span className="max-w-md truncate font-medium text-[#1d1d1f] hover:text-[#0066cc]">{file.name}</span></button></td><td className="whitespace-nowrap px-4 py-3 text-[#515154]">{file.projectName ?? "-"}</td><td className="hidden max-w-xs truncate px-4 py-3 text-[#86868b] md:table-cell">{file.folderPath ?? "项目根目录"}</td><td className="hidden whitespace-nowrap px-4 py-3 text-[#86868b] sm:table-cell">{formatDate(file.createdAt)}</td><td className="hidden px-4 py-3 text-[#86868b] lg:table-cell">{file.owner}</td></tr>)}</tbody></table></div> : <div className="px-6 py-16 text-center"><Search className="mx-auto text-[#c7c7cc]" size={38} /><p className="mt-3 text-sm font-medium text-[#515154]">没有找到符合条件的文件</p><p className="mt-1 text-xs text-[#86868b]">可缩短文件名关键词或扩大上传日期范围</p></div>}
+      {files.length ? <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="bg-black/[0.018] text-left text-xs font-medium text-[#6e6e73]"><tr><th className="px-4 py-3">文件名</th><th className="px-4 py-3">所属项目</th><th className="hidden px-4 py-3 md:table-cell">文件夹位置</th><th className="hidden px-4 py-3 sm:table-cell">上传时间</th><th className="hidden px-4 py-3 lg:table-cell">上传人</th><th className="px-2 py-3 sm:hidden">发送</th></tr></thead><tbody className="divide-y divide-black/[0.06]">{files.map((file) => <tr className="transition-colors hover:bg-[#0071e3]/[0.035]" key={file.id}><td className="px-4 py-3"><button className="flex min-w-0 items-center gap-3 text-left" onClick={() => openResourceFile(file)} type="button"><HoverPreviewIcon file={file} /><span className="max-w-md truncate font-medium text-[#1d1d1f] hover:text-[#0066cc]">{file.name}</span></button></td><td className="whitespace-nowrap px-4 py-3 text-[#515154]">{file.projectName ?? "-"}</td><td className="hidden max-w-xs truncate px-4 py-3 text-[#86868b] md:table-cell">{file.folderPath ?? "项目根目录"}</td><td className="hidden whitespace-nowrap px-4 py-3 text-[#86868b] sm:table-cell">{formatDate(file.createdAt)}</td><td className="hidden px-4 py-3 text-[#86868b] lg:table-cell">{file.owner}</td><td className="px-2 py-2 sm:hidden"><MobileFileShareButton className="size-11 px-0" fileName={resourceFileName(file)} iconOnly url={resourceShareUrl(file)} /></td></tr>)}</tbody></table></div> : <div className="px-6 py-16 text-center"><Search className="mx-auto text-[#c7c7cc]" size={38} /><p className="mt-3 text-sm font-medium text-[#515154]">没有找到符合条件的文件</p><p className="mt-1 text-xs text-[#86868b]">可缩短文件名关键词或扩大上传日期范围</p></div>}
     </Card>
   );
 }
@@ -743,6 +753,7 @@ function MobileResourceList({ isAdmin, items, onDownload, onEnter, onMenu, onPre
             </button>
             <span className="flex w-[3.75rem] shrink-0 items-center justify-center px-1 text-center text-[11px] font-medium tabular-nums text-slate-500">{item.kind === "file" ? formatSize(item.size) : "文件夹"}</span>
             <button aria-label={`下载${item.name}`} className="flex w-11 shrink-0 items-center justify-center border-l border-black/[0.055] text-[#0071e3] transition-colors active:bg-[#0071e3]/10" onClick={() => onDownload(item)} type="button"><Download size={18} /></button>
+            <span className="flex shrink-0 border-l border-black/[0.055]"><MobileFileShareButton className="h-full text-[#0071e3]" fileName={resourceFileName(item)} iconOnly url={resourceShareUrl(item)} /></span>
             {isAdmin ? <button aria-label={`管理${item.name}`} className="flex w-11 shrink-0 items-center justify-center border-l border-black/[0.055] text-slate-500 transition-colors active:bg-black/[0.055]" onClick={() => onMenu(item)} type="button"><MoreHorizontal size={19} /></button> : null}
           </article>
         );
@@ -812,6 +823,22 @@ function downloadResourceItems(items: ResourceItem[]) {
   form.remove();
 }
 
+function resourceDownloadUrl(item: ResourceItem) {
+  return item.kind === "folder" ? `/api/resources/folders/${item.id}/download` : `/api/resources/files/${item.id}/download`;
+}
+
+function resourceShareUrl(item: ResourceItem) {
+  return item.kind === "folder" ? resourceDownloadUrl(item) : `${resourceDownloadUrl(item)}?share=1`;
+}
+
+function resourceFileName(item: ResourceItem) {
+  return item.kind === "folder" ? `${item.name}.zip` : item.originalName;
+}
+
+function resourceSelectionBody(items: ResourceItem[]) {
+  return new URLSearchParams({ selections: JSON.stringify(items.map((item) => ({ kind: item.kind, id: item.id }))) }).toString();
+}
+
 function HoverPreviewIcon({ file }: { file: FileItem }) {
   const [layout, setLayout] = useState<{ height: number; left: number; top: number; width: number } | null>(null);
   const showTimerRef = useRef<number | null>(null);
@@ -875,7 +902,7 @@ function ResourceIcon({ item }: { item: FolderItem | FileItem }) {
 }
 
 function ActionDialog({ item, onClose, onDelete, onDownload, onEditFolder, onMove, onPreview, onRename }: { item: FolderItem | FileItem; onClose: () => void; onDelete: () => void; onDownload: () => void; onEditFolder: () => void; onMove: () => void; onPreview: () => void; onRename: () => void }) {
-  return <Modal title={item.name} onClose={onClose}><div className="grid grid-cols-2 gap-3">{item.kind === "file" && item.canPreview ? <ActionButton icon={<Eye size={18} />} label="在线预览" onClick={() => { onClose(); onPreview(); }} /> : null}<ActionButton icon={<Download size={18} />} label={item.kind === "folder" ? "下载文件夹" : "下载原文件"} onClick={() => { onClose(); onDownload(); }} /><ActionButton icon={<Pencil size={18} />} label="重命名" onClick={onRename} /><ActionButton icon={<Move size={18} />} label="移动位置" onClick={() => { onClose(); onMove(); }} />{item.kind === "folder" ? <ActionButton icon={<Eye size={18} />} label="可见范围" onClick={() => { onClose(); onEditFolder(); }} /> : null}<ActionButton danger icon={<Trash2 size={18} />} label="永久删除" onClick={onDelete} /></div></Modal>;
+  return <Modal title={item.name} onClose={onClose}><div className="grid grid-cols-2 gap-3">{item.kind === "file" && item.canPreview ? <ActionButton icon={<Eye size={18} />} label="在线预览" onClick={() => { onClose(); onPreview(); }} /> : null}<ActionButton icon={<Download size={18} />} label={item.kind === "folder" ? "下载文件夹" : "下载原文件"} onClick={() => { onClose(); onDownload(); }} /><MobileFileShareButton className="h-20 flex-col gap-2 border border-slate-200 bg-white text-sm text-slate-700 ring-0" fileName={resourceFileName(item)} url={resourceShareUrl(item)} /><ActionButton icon={<Pencil size={18} />} label="重命名" onClick={onRename} /><ActionButton icon={<Move size={18} />} label="移动位置" onClick={() => { onClose(); onMove(); }} />{item.kind === "folder" ? <ActionButton icon={<Eye size={18} />} label="可见范围" onClick={() => { onClose(); onEditFolder(); }} /> : null}<ActionButton danger icon={<Trash2 size={18} />} label="永久删除" onClick={onDelete} /></div></Modal>;
 }
 
 function ActionButton({ danger = false, icon, label, onClick }: { danger?: boolean; icon: React.ReactNode; label: string; onClick: () => void }) {

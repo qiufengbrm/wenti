@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { getAdminVolunteerHourDetail } from "@/lib/data";
 import { RejectApprovedHourButton } from "@/components/hours/RejectApprovedHourButton";
 import { VolunteerContributionHeatmap } from "@/components/hours/VolunteerContributionHeatmap";
+import { MobileFileShareButton } from "@/components/files/MobileFileShareButton";
 
 export default async function AdminVolunteerHoursPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -62,7 +63,7 @@ export default async function AdminVolunteerHoursPage({ params }: { params: Prom
                     {record.rejectReason ? <Detail label="驳回原因" value={record.rejectReason} wide /> : null}
                     <div className="lg:col-span-2">
                       <p className="text-xs font-medium text-[#86868b]">证明材料</p>
-                      {record.proofFileName ? record.proofHref ? <Button className="mt-2" download href={record.proofHref} variant="secondary">下载 {record.proofFileName}</Button> : <p className="mt-1.5 text-sm text-[#515154]">{record.proofFileName}</p> : <p className="mt-1.5 text-sm text-[#515154]">未上传证明材料</p>}
+                      {record.proofFileName ? record.proofHref ? <div className="mt-2 flex flex-wrap gap-2"><Button download href={record.proofHref} variant="secondary">下载 {record.proofFileName}</Button><MobileFileShareButton fileName={record.proofFileName} url={record.proofHref} /></div> : <p className="mt-1.5 text-sm text-[#515154]">{record.proofFileName}</p> : <p className="mt-1.5 text-sm text-[#515154]">未上传证明材料</p>}
                     </div>
                     <div className="flex flex-wrap gap-2 lg:col-span-2">
                       {record.taskId ? <Button href={`/admin/tasks/${record.taskId}`} variant="secondary">查看关联任务</Button> : record.statusCode === "PENDING" ? <Button href={`/admin/tasks/hours/review/${record.id}`} variant="secondary">前往审核</Button> : null}
