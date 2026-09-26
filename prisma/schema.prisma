@@ -473,3 +473,16 @@ model FloatingAnnouncement {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+model AiProviderSetting {
+  id                   Int      @id @default(1)
+  provider             String   @default("shared") @db.VarChar(32)
+  encryptedApiKey      String?  @db.Text
+  encryptionIv         String?  @db.VarChar(64)
+  authTag              String?  @db.VarChar(64)
+  keyHint              String?  @db.VarChar(32)
+  updatedById          String?
+  updatedByName        String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}

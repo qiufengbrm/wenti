@@ -18,6 +18,7 @@ async function main() {
   await prisma.taskSubmission.deleteMany();
   await prisma.taskSignup.deleteMany();
   await prisma.volunteerHour.deleteMany();
+  await prisma.aiProviderSetting.deleteMany();
   await prisma.operationLog.deleteMany();
   await prisma.fileResource.deleteMany();
   await prisma.resourceFolder.deleteMany();

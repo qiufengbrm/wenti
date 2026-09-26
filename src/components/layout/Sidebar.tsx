@@ -14,6 +14,7 @@ import {
   Gauge,
   History,
   Settings,
+  Wrench,
   Sparkles,
   UploadCloud,
   User,
@@ -38,7 +39,8 @@ const icons = {
   uploadCloud: UploadCloud,
   user: User,
   userCog: UserCog,
-  users: Users
+  users: Users,
+  wrench: Wrench
 };
 
 export type NavIcon = keyof typeof icons;

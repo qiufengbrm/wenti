@@ -20,11 +20,18 @@
   "prisma": {
     "seed": "node prisma/seed.mjs"
   },
+  "overrides": {
+    "exceljs": {
+      "brace-expansion": "1.1.18",
+      "uuid": "11.1.1"
+    }
+  },
   "dependencies": {
     "@prisma/client": "6.1.0",
     "ali-oss": "^6.23.0",
     "archiver": "^7.0.1",
     "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
     "lucide-react": "0.468.0",
     "next": "^15.1.11",
     "react": "^19.0.1",

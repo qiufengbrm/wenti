@@ -12,6 +12,7 @@ const volunteerItems: NavItem[] = [
   { label: "我的志愿时长", href: "/volunteer/hours", icon: "history", hidden: true, exact: true },
   { label: "资料中心", href: "/volunteer/files", icon: "uploadCloud" },
   { label: "教程中心", href: "/volunteer/tutorials", icon: "bookOpen" },
+  { label: "工具栏", href: "/volunteer/tools", icon: "wrench" },
   { label: "个人信息", href: "/volunteer/profile", icon: "user", last: true }
 ];
 

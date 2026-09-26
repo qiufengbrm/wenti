@@ -13,6 +13,7 @@ const baseItems: NavItem[] = [
   { label: "资料中心", href: "/admin/files", icon: "uploadCloud" },
   { label: "志愿时长管理", href: "/admin/hours", icon: "history" },
   { label: "教程管理", href: "/admin/tutorials", icon: "bookOpen" },
+  { label: "工具栏", href: "/admin/tools", icon: "wrench" },
   { label: "个人信息", href: "/admin/profile", icon: "user", last: true }
 ];
 
